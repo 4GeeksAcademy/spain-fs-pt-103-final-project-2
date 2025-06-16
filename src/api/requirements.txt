@@ -1,6 +1,7 @@
 flask
-flask_sqlalchemy
-flask_jwt_extended
-flask_cors
+flask-cors
+flask-jwt-extended
+flask-sqlalchemy
+flask-admin
 openai
-python-dotenv
+werkzeug
