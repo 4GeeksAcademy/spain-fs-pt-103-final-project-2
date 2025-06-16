@@ -38,7 +38,6 @@ body {
   padding: 0;
 }
 
-
 .navbar {
   width: 100%;
   background: white;
@@ -141,7 +140,6 @@ body {
   transform: translateY(-1px);
 }
 
-
 .hero {
   margin-top: 80px;
   padding: 8rem;
@@ -198,7 +196,6 @@ body {
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
-
 
 .content {
   background: white;
@@ -257,7 +254,6 @@ body {
   line-height: 1.6;
 }
 
-
 .footer {
   display: flex;
   justify-content: center;
@@ -267,7 +263,6 @@ body {
   color: white;
   width: 100%;
 }
-
 
 
 .auth-page {

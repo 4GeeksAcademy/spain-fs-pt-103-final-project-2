@@ -1,0 +1,7 @@
+flask
+flask-cors
+flask-jwt-extended
+flask-sqlalchemy
+flask-admin
+openai
+werkzeug
