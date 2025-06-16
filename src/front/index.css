@@ -1,4 +1,33 @@
-/*Apartado HOME.JSX*/
+
+.landing-bg {
+  background: linear-gradient(135deg, #00bfff 0%, #1a2980 100%);
+}
+
+
+.titulo-gradiente-horizontal {
+  background: linear-gradient(to right, #fff, #00bfff, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+
+.label-blanco-bold {
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Efecto glass */
+.glass-bg {
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 1rem;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
@@ -9,7 +38,6 @@ body {
   padding: 0;
 }
 
-/* Navbar */
 .navbar {
   width: 100%;
   background: white;
@@ -19,7 +47,6 @@ body {
   top: 0;
   left: 0;
   z-index: 999;
-
   display: flex;
   align-items: center;        
   padding: 0 1rem;            
@@ -99,7 +126,6 @@ body {
 }
 
 
-/* Botón Empezar Gratis */
 .free {
   background: #ff5f6d;
   color: white;
@@ -114,7 +140,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* Principal */
 .hero {
   margin-top: 80px;
   padding: 8rem;
@@ -172,7 +197,6 @@ body {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Contenido */
 .content {
   background: white;
   margin: 4rem 2rem;
@@ -230,7 +254,6 @@ body {
   line-height: 1.6;
 }
 
-/* Footer */
 .footer {
   display: flex;
   justify-content: center;
@@ -241,7 +264,6 @@ body {
   width: 100%;
 }
 
-/* Estilos de Login y Register */
 
 .auth-page {
   min-height: 100vh;
