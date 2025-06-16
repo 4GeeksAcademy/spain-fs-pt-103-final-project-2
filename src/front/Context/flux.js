@@ -1,4 +1,3 @@
-// src/context/flux.js
 const getState = ({ getStore, getActions, setStore }) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
