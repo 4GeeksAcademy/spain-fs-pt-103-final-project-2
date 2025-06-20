@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar.jsx";
-import SmartRecipe from "../assets/img/SmartRecipe.png";
+import "../index.css";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Home = () => {
@@ -33,7 +33,7 @@ export const Home = () => {
 
 	return (
 		<div>
-			 <Navbar />
+			<Navbar />
 			{/* Presentacion */}
 			<section className="hero">
 				<div className="hero-container">

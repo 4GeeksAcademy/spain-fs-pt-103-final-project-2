@@ -1,16 +1,16 @@
+from api.admin import setup_admin  # Admin panel
+from api.routes.openai_chat import chat_api
+from api.routes.auth import api_auth
+from api.routes.recipes import api_recipes
+from api.routes.users import api_users
+from api.models import db
+from flask_jwt_extended import JWTManager
+from flask_cors import CORS
+from flask import Flask
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask
-from flask_cors import CORS
-from flask_jwt_extended import JWTManager
-from api.models import db
-from api.routes.users import api_users
-from api.routes.recipes import api_recipes
-from api.routes.auth import api_auth
-from api.routes.openai_chat import chat_api
-from api.admin import setup_admin  # Admin panel
 
 def create_app():
     app = Flask(__name__)
@@ -36,6 +36,7 @@ def create_app():
     app.register_blueprint(chat_api, url_prefix="/api")
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()

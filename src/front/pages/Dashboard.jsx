@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import "../dashboard.css"; // Import your CSS styles
 import { API_URL } from "../config";
 
 export default function Dashboard() {
