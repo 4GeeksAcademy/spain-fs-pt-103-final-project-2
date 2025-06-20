@@ -1,38 +1,27 @@
-export const initialStore=()=>{
-  return{
-    message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      }
-    ]
-  }
-}
+import { createContext } from "react";
 
-export default function storeReducer(store, action = {}) {
-  switch(action.type){
-    case 'set_hello':
-      return {
-        ...store,
-        message: action.payload
-      };
-      
-    case 'add_task':
+export const StoreContext = createContext();
 
-      const { id,  color } = action.payload
+export const initialState = {
+  user: null,
+  token: null,
+  message: null,
+  favorites: [],
+};
 
-      return {
-        ...store,
-        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
-      };
+export default function reducer(state, action) {
+  switch (action.type) {
+    case "set_user":
+      return { ...state, user: action.payload };
+    case "set_token":
+      return { ...state, token: action.payload };
+    case "set_message":
+      return { ...state, message: action.payload };
+    case "set_favorites":
+      return { ...state, favorites: action.payload };
+    case "logout":
+      return { ...initialState };
     default:
-      throw Error('Unknown action.');
-  }    
+      return state;
+  }
 }

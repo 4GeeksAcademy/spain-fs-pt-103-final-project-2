@@ -4,7 +4,7 @@ import './index.css'  // Global styles for your application
 import { RouterProvider } from "react-router-dom";  // Import RouterProvider to use the router
 import { router } from "./routes";  // Import the router configuration
 import { BackendURL } from './components/BackendURL';
-import AppContext from './Context/AppContext';
+import { StoreProvider } from './hooks/useGlobalReducer';
 
 const Main = () => {
 
@@ -15,14 +15,13 @@ const Main = () => {
     );
     return (
         <React.StrictMode>
-            {/* Provide global state to all components */}
-            {/* Set up routing for the application */}
-            <RouterProvider router={router}>
-            </RouterProvider>
+            <StoreProvider>
+                {/* Provide global state to all components */}
+                {/* Set up routing for the application */}
+                <RouterProvider router={router} />
+            </StoreProvider>
         </React.StrictMode>
     );
 }
 
-const AppWithContext = AppContext(Main);
-// Render the Main component into the root DOM element.
-ReactDOM.createRoot(document.getElementById('root')).render(<AppWithContext />)
+ReactDOM.createRoot(document.getElementById('root')).render(<Main />);

@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify
-from models import User
-from models import db
+from api.models import User
+from api.models import db
 from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
 
 api_auth = Blueprint("api_auth", __name__)
+
 
 @api_auth.after_request
 def apply_cors(response):
@@ -13,10 +14,12 @@ def apply_cors(response):
     response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
     return response
 
+
 @api_auth.route("/register", methods=["OPTIONS"])
 @api_auth.route("/login", methods=["OPTIONS"])
 def options():
     return '', 204
+
 
 @api_auth.route("/register", methods=["POST"])
 def register():
@@ -36,6 +39,7 @@ def register():
     db.session.commit()
 
     return jsonify({"msg": "Usuario registrado correctamente"}), 201
+
 
 @api_auth.route("/login", methods=["POST"])
 def login():

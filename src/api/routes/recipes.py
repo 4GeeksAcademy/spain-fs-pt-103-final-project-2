@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import Recipe, User
+from api.models import Recipe, User
 from ..db import db
 
 api_recipes = Blueprint("api_recipes", __name__)
+
 
 @api_recipes.after_request
 def apply_cors(response):
@@ -12,9 +13,11 @@ def apply_cors(response):
     response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
     return response
 
+
 @api_recipes.route("/recipes", methods=["OPTIONS"])
 def recipes_options():
     return '', 204
+
 
 @api_recipes.route("/recipes", methods=["GET"])
 @jwt_required()
@@ -24,6 +27,7 @@ def get_recipes():
     if not user:
         return jsonify({"msg": "Usuario no encontrado"}), 404
     return jsonify([r.serialize() for r in user.recipes]), 200
+
 
 @api_recipes.route("/recipes", methods=["POST"])
 @jwt_required()
@@ -45,6 +49,7 @@ def create_recipe():
     db.session.add(recipe)
     db.session.commit()
     return jsonify(recipe.serialize()), 201
+
 
 @api_recipes.route("/recipes/favorite", methods=["POST"])
 @jwt_required()

@@ -1,10 +1,11 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import User
+from api.models import User
 from ..db import db
 
 api_users = Blueprint("api_users", __name__)
+
 
 @api_users.after_request
 def apply_cors(response):
@@ -12,6 +13,7 @@ def apply_cors(response):
     response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
     response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
     return response
+
 
 @api_users.route("/user", methods=["OPTIONS"])
 @api_users.route("/login", methods=["OPTIONS"])
@@ -84,6 +86,8 @@ def update_user():
     return jsonify({"msg": "Perfil actualizado"}), 200
 
 # Eliminar cuenta
+
+
 @api_users.route("/user", methods=["DELETE"])
 @jwt_required()
 def delete_user():
