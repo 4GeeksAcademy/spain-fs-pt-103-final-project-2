@@ -20,3 +20,11 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
+
+from api.routes.auth import api_auth
+
+api.register_blueprint(api_auth)
+
+from api.routes.openai_chat import chat_api
+
+api.register_blueprint(chat_api, url_prefix='/api/openai')
