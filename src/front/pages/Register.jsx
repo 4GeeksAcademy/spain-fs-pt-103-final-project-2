@@ -1,14 +1,20 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 
 const Register = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [error, setError] = useState(null);
+    const [sucess, setSuccess] = useState(null);
+    const navigate = useNavigate();
 
     const handleRegister = async (e) => {
         e.preventDefault();
+        setError(null);
+        setSuccess(null);
         if (password !== confirmPassword) {
             alert("Las contraseñas no coinciden");
             return;
@@ -20,10 +26,23 @@ const Register = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                setError(errorData.message || "Error al registrar usuario");
+                return;
+            }
+
             const data = await res.json();
+            setSuccess("Registro exitoso. Por favor, inicia sesión.");
             console.log("Register response:", data);
+
+            setTimeout(() => {
+                navigate("/login");
+            }, 2000);
         } catch (error) {
             console.error("Error during register:", error);
+            setError("Error al registrar usuario. Por favor, inténtalo de nuevo más tarde.");
         }
     };
 
