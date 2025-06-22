@@ -4,16 +4,16 @@ export const Navbar = () => {
 
 	return (
 		<nav className="navbar navbar-light bg-light">
-			<div className="container">
-				<Link to="/">
-					<span className="navbar-brand mb-0 h1">React Boilerplate</span>
-				</Link>
-				<div className="ml-auto">
-					<Link to="/demo">
-						<button className="btn btn-primary">Check the Context in action</button>
-					</Link>
-				</div>
-			</div>
+			 <img
+            src="/src/front/assets/img/SmartRecipe.png"
+            alt="SmartRecipe logo"
+            className="logo-img"
+          />
+		  <div className="auth-buttons">
+            <Link to="/Home" className="btn">Home</Link>
+            <Link to="/ListaCompra" className="btn">Lista de la compra</Link>
+            <Link to="/Dashboard" className="btn">Dashboard</Link>
+          </div>
 		</nav>
 	);
 };
