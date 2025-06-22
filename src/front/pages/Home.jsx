@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar.jsx";
 import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import "../home.css";
 
 export const Home = () => {
 	const { store, dispatch } = useGlobalReducer();
@@ -33,7 +34,7 @@ export const Home = () => {
 
 	return (
 		<div>
-			 <Navbar />
+			<Navbar />
 			{/* Presentacion */}
 			<section className="hero">
 				<div className="hero-container">
@@ -67,6 +68,18 @@ export const Home = () => {
 							<div className="feature-icon">❤️</div>
 							<h3>Recetas Favoritas</h3>
 							<p>Guarda y organiza las recetas que más te gustan para tenerlas siempre a mano</p>
+						</div>
+
+						<div className="feature">
+							<div className="feature-icon">🛒</div>
+							<h3>Lista de la Compra</h3>
+							<p>Genera una lista de la compra basada en tus recetas favoritas y necesidades semanales</p>
+						</div>
+
+						<div className="feature">
+							<div className="feature-icon">🚀</div>
+							<h3>App Novedosa y 100% Gratuita</h3>
+							<p>Disfruta de una experiencia moderna, intuitiva y completamente gratuita desde cualquier dispositivo</p>
 						</div>
 					</div>
 				</div>
