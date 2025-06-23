@@ -1,35 +1,29 @@
-
 import React, { useState } from "react";
-import { API_URL } from "../config";
+import { useNavigate } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
+import "../index.css";
 
-const Register = () => {
+export const Register = () => {
+    const { register } = useGlobalReducer();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const [registerSuccess, setRegisterSuccess] = useState(false);
+    const navigate = useNavigate();
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        if (password !== confirmPassword) {
-            alert("Las contraseñas no coinciden");
-            return;
-        }
-
-        try {
-            const res = await fetch(`${API_URL}/api/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
-            const data = await res.json();
-            console.log("Register response:", data);
-        } catch (error) {
-            console.error("Error during register:", error);
+        const success = await register(email, password);
+        if (success) {
+            setRegisterSuccess(true);
+            setTimeout(() => navigate("/login"), 1000);
+        } else {
+            alert("Error al registrar usuario");
         }
     };
 
     return (
         <div className="auth-page register-page">
-            <h1 className="hero-title">Crear cuenta</h1>
+            <h1 className="hero-title">Registro</h1>
             <form className="auth-form" onSubmit={handleRegister}>
                 <input
                     type="email"
@@ -47,18 +41,13 @@ const Register = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
-                <input
-                    type="password"
-                    name="confirmPassword"
-                    placeholder="Confirmar contraseña"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                />
                 <button type="submit" className="cta-button">Registrarse</button>
             </form>
+            {registerSuccess && (
+                <div className="dialog success-dialog">
+                    <p>✅ Usuario registrado correctamente</p>
+                </div>
+            )}
         </div>
     );
 };
-
-export default Register;

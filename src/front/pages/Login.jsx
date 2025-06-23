@@ -1,18 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
+import "../index.css";
 
 export const Login = () => {
     const { login } = useGlobalReducer();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loginSuccess, setLoginSuccess] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        const success = await login(email, password);
-        if (success) {
-            navigate("/dashboard");
+        const successLogin = await login(email, password);
+        if (successLogin) {
+            setLoginSuccess(true);
+            setTimeout(() => navigate("/dashboard"), 1000);
         } else {
             alert("Credenciales inválidas");
         }
@@ -40,7 +43,11 @@ export const Login = () => {
                 />
                 <button type="submit" className="cta-button">Entrar</button>
             </form>
+            {loginSuccess && (
+                <div className="dialog success-dialog">
+                    <p>✅ Usuario logueado correctamente</p>
+                </div>
+            )}
         </div>
     );
 };
-
