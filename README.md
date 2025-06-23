@@ -1,81 +1,80 @@
-# WebApp boilerplate with React JS and Flask API
+# Smart Recipe
 
-Build web applications using React.js for the front end and python/flask for your backend API.
+Proyecto Full Stack con integración de IA para generar recetas personalizadas, login, registro y dashboard con conexión a OpenAI GPT-4.
 
-- Documentation can be found here: https://4geeks.com/docs/start/react-flask-template
-- Here is a video on [how to use this template](https://www.loom.com/share/f37c6838b3f1496c95111e515e83dd9b)
-- Integrated with Pipenv for package managing.
-- Fast deployment to Render [in just a few steps here](https://4geeks.com/docs/start/deploy-to-render-com).
-- Use of .env file.
-- SQLAlchemy integration for database abstraction.
+## 🧠 ¿Qué hace?
 
-### 1) Installation:
+- Registro e inicio de sesión de usuarios (JWT).
+- Generador de recetas personalizado vía OpenAI (`/api/openai/chat`).
+- Frontend en React con Vite y Context API.
+- Backend en Flask con SQLAlchemy.
+- Comunicación full API RESTful (`/api/login`, `/api/register`, `/api/hello`, `/api/openai/chat`).
 
-> If you use Github Codespaces (recommended) or Gitpod this template will already come with Python, Node and the Posgres Database installed. If you are working locally make sure to install Python 3.10, Node 
+---
 
-It is recomended to install the backend first, make sure you have Python 3.10, Pipenv and a database engine (Posgress recomended)
+## ⚙️ Puesta en marcha en GitHub Codespaces
 
-1. Install the python packages: `$ pipenv install`
-2. Create a .env file based on the .env.example: `$ cp .env.example .env`
-3. Install your database engine and create your database, depending on your database you have to create a DATABASE_URL variable with one of the possible values, make sure you replace the valudes with your database information:
+1. **Abre este repositorio en Codespaces**  
+   (haz clic en "Code" → "Codespaces" → "Create codespace")
 
-| Engine    | DATABASE_URL                                        |
-| --------- | --------------------------------------------------- |
-| SQLite    | sqlite:////test.db                                  |
-| MySQL     | mysql://username:password@localhost:port/example    |
-| Postgress | postgres://username:password@localhost:5432/example |
+---
 
-4. Migrate the migrations: `$ pipenv run migrate` (skip if you have not made changes to the models on the `./src/api/models.py`)
-5. Run the migrations: `$ pipenv run upgrade`
-6. Run the application: `$ pipenv run start`
+### 🔧 Backend (Flask)
 
-> Note: Codespaces users can connect to psql by typing: `psql -h localhost -U gitpod example`
+1. Instala dependencias:
 
-### Undo a migration
-
-You are also able to undo a migration by running
-
-```sh
-$ pipenv run downgrade
+```bash
+pip install -r requirements.txt
 ```
 
-### Backend Populate Table Users
+2. Crea un archivo `.env` con tu clave de OpenAI:
 
-To insert test users in the database execute the following command:
-
-```sh
-$ flask insert-test-users 5
+```bash
+echo "OPENAI_API_KEY=tu_clave_aqui" > .env
 ```
 
-And you will see the following message:
+3. Exporta las variables de entorno necesarias:
 
-```
-  Creating test users
-  test_user1@test.com created.
-  test_user2@test.com created.
-  test_user3@test.com created.
-  test_user4@test.com created.
-  test_user5@test.com created.
-  Users created successfully!
+```bash
+export FLASK_APP=src/api/routes.py
+export FLASK_RUN_HOST=0.0.0.0
+export FLASK_RUN_PORT=5000
 ```
 
-### **Important note for the database and the data inside it**
+4. Inicia el servidor Flask:
 
-Every Github codespace environment will have **its own database**, so if you're working with more people eveyone will have a different database and different records inside it. This data **will be lost**, so don't spend too much time manually creating records for testing, instead, you can automate adding records to your database by editing ```commands.py``` file inside ```/src/api``` folder. Edit line 32 function ```insert_test_data``` to insert the data according to your model (use the function ```insert_test_users``` above as an example). Then, all you need to do is run ```pipenv run insert-test-data```.
+```bash
+flask run
+```
 
-### Front-End Manual Installation:
+---
 
--   Make sure you are using node version 20 and that you have already successfully installed and runned the backend.
+### 💻 Frontend (React + Vite)
 
-1. Install the packages: `$ npm install`
-2. Start coding! start the webpack dev server `$ npm run start`
+1. Abre una nueva terminal:
 
-## Publish your website!
+```bash
+cd src/front
+npm install
+npm run dev
+```
 
-This boilerplate it's 100% read to deploy with Render.com and Heroku in a matter of minutes. Please read the [official documentation about it](https://4geeks.com/docs/start/deploy-to-render-com).
+2. Abre el puerto `5173` en Codespaces para visualizar la app.
 
-### Contributors
+---
 
-This template was built as part of the 4Geeks Academy [Coding Bootcamp](https://4geeksacademy.com/us/coding-bootcamp) by [Alejandro Sanchez](https://twitter.com/alesanchezr) and many other contributors. Find out more about our [Full Stack Developer Course](https://4geeksacademy.com/us/coding-bootcamps/part-time-full-stack-developer), and [Data Science Bootcamp](https://4geeksacademy.com/us/coding-bootcamps/datascience-machine-learning).
+## 🧪 Rutas útiles
 
-You can find other templates and resources like this at the [school github page](https://github.com/4geeksacademy/).
+- `POST /api/register` – Registro de usuario
+- `POST /api/login` – Login y JWT
+- `POST /api/openai/chat` – Consulta personalizada a OpenAI
+- `GET /api/hello` – Prueba de conexión
+
+---
+
+## 👥 Autores
+
+- **Erik**
+- **Ousama**
+- **Samuel**
+- **Tito**

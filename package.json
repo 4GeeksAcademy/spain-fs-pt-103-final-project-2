@@ -54,10 +54,11 @@
 		]
 	},
 	"dependencies": {
-		"lucide-react": "^0.522.0",
+		"lucide-react": "^0.517.0",
 		"prop-types": "^15.8.1",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"react-router-dom": "^6.18.0"
+		"react-router-dom": "^6.18.0",
+		"recharts": "^2.15.3"
 	}
 }

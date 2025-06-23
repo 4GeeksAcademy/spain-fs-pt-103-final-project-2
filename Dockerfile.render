@@ -1,13 +1,14 @@
-FROM node:16
 
-RUN apt update \
-    && apt install software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa \
-    && apt update \
-    && apt install python3.10
+FROM python:3.10-slim
 
-WORKDIR /opt/app
-COPY --from=build /opt/app/venv /venv
+WORKDIR /app
 
-ENV PATH="/opt/app/venv/bin:$PATH"
-ENV NODE_ENV=container
+COPY . .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+ENV FLASK_APP=src/api/routes.py
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_RUN_PORT=10000
+
+CMD ["flask", "run", "--host=0.0.0.0", "--port=10000"]

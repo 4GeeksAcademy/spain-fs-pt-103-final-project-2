@@ -1,24 +1,127 @@
-// Import necessary hooks and functions from React.
-import { useContext, useReducer, createContext } from "react";
-import storeReducer, { initialStore } from "../store"  // Import the reducer and the initial state.
+import React, { useContext, useReducer } from "react";
+import reducer, { initialState, StoreContext } from "../store";
+import { API_URL } from "../config";
 
-// Create a context to hold the global state of the application
-// We will call this global state the "store" to avoid confusion while using local states
-const StoreContext = createContext()
 
-// Define a provider component that encapsulates the store and warps it in a context provider to 
-// broadcast the information throught all the app pages and components.
-export function StoreProvider({ children }) {
-    // Initialize reducer with the initial state.
-    const [store, dispatch] = useReducer(storeReducer, initialStore())
-    // Provide the store and dispatch method to all child components.
-    return <StoreContext.Provider value={{ store, dispatch }}>
-        {children}
-    </StoreContext.Provider>
-}
+export const StoreProvider = ({ children }) => {
+    const [store, dispatch] = useReducer(reducer, initialState);
+    return (
+        <StoreContext.Provider value={{ store, dispatch }}>
+            {children}
+        </StoreContext.Provider>
+    );
+};
 
-// Custom hook to access the global state and dispatch function.
-export default function useGlobalReducer() {
-    const { dispatch, store } = useContext(StoreContext)
-    return { dispatch, store };
-}
+
+const useGlobalReducer = () => {
+    const context = useContext(StoreContext);
+    if (!context) throw new Error("useGlobalReducer must be used within a StoreProvider");
+
+    const { store, dispatch } = context;
+
+    const login = async (email, password) => {
+        try {
+            const res = await fetch(`${API_URL}/api/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+
+            if (!res.ok) throw new Error("Credenciales inválidas");
+
+            const data = await res.json();
+            dispatch({ type: "set_user", payload: data.user });
+            dispatch({ type: "set_token", payload: data.token });
+            localStorage.setItem("token", data.token);
+            return true;
+        } catch (err) {
+            console.error("Error al iniciar sesión:", err);
+            return false;
+        }
+    };
+
+    const logout = () => {
+        localStorage.removeItem("token");
+        dispatch({ type: "logout" });
+    };
+
+    const syncTokenFromStorage = () => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            dispatch({ type: "set_token", payload: token });
+        }
+    };
+
+    const getFavorites = async () => {
+        try {
+            const res = await fetch(`${API_URL}/api/favorites`, {
+                headers: {
+                    Authorization: "Bearer " + store.token,
+                },
+            });
+            if (!res.ok) throw new Error("No se pudieron cargar favoritos");
+            const data = await res.json();
+            dispatch({ type: "set_favorites", payload: data });
+        } catch (err) {
+            console.error("Error al cargar favoritos:", err);
+        }
+    };
+
+    const addFavorite = async (recipeId) => {
+        try {
+            const res = await fetch(`${API_URL}/api/favorites`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + store.token,
+                },
+                body: JSON.stringify({ recipe_id: recipeId }),
+            });
+
+            if (!res.ok) throw new Error("No se pudo agregar favorito");
+            getFavorites();
+        } catch (err) {
+            console.error("Error al agregar favorito:", err);
+        }
+    };
+
+    const removeFavorite = async (recipeId) => {
+        try {
+            const res = await fetch(`${API_URL}/api/favorites/${recipeId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: "Bearer " + store.token,
+                },
+            });
+
+            if (!res.ok) throw new Error("No se pudo eliminar favorito");
+            getFavorites();
+        } catch (err) {
+            console.error("Error al eliminar favorito:", err);
+        }
+    };
+
+    const fetchMessage = async () => {
+        try {
+            const res = await fetch(`${API_URL}/api/hello`);
+            const data = await res.json();
+            dispatch({ type: "set_message", payload: data.message });
+        } catch (err) {
+            console.error("Error fetching message:", err);
+        }
+    };
+
+    return {
+        store,
+        dispatch,
+        login,
+        logout,
+        syncTokenFromStorage,
+        getFavorites,
+        addFavorite,
+        removeFavorite,
+        fetchMessage,
+    };
+};
+
+export default useGlobalReducer;
