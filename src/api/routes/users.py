@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from api.models import User
-from ..db import db
+from ..models import db
 
 api_users = Blueprint("api_users", __name__)
 
@@ -37,7 +37,7 @@ def register():
     data = request.get_json()
     email = data.get("email")
     password = data.get("password")
-
+    print(data)
     if not email or not password:
         return jsonify({"msg": "Email y contraseña son obligatorios"}), 400
 
