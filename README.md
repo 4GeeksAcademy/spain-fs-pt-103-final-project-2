@@ -17,30 +17,41 @@ Proyecto Full Stack con integración de IA para generar recetas personalizadas, 
 1. **Abre este repositorio en Codespaces**  
    (haz clic en "Code" → "Codespaces" → "Create codespace")
 
-2. **Instala dependencias del backend:**
+---
+
+### 🔧 Backend (Flask)
+
+1. Instala dependencias:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Arranca el backend Flask:**
+2. Crea un archivo `.env` con tu clave de OpenAI:
 
 ```bash
-flask run --host=0.0.0.0 --port=5000
+echo "OPENAI_API_KEY=tu_clave_aqui" > .env
 ```
 
-4. **Configura tu API Key de OpenAI:**  
-   Crea un archivo `.env` en la raíz con:
+3. Exporta las variables de entorno necesarias:
 
-```env
-OPENAI_API_KEY=tu_clave_aqui
+```bash
+export FLASK_APP=src/api/routes.py
+export FLASK_RUN_HOST=0.0.0.0
+export FLASK_RUN_PORT=5000
+```
+
+4. Inicia el servidor Flask:
+
+```bash
+flask run
 ```
 
 ---
 
-### 🚀 Frontend (React + Vite)
+### 💻 Frontend (React + Vite)
 
-1. En una nueva terminal:
+1. Abre una nueva terminal:
 
 ```bash
 cd src/front
@@ -48,7 +59,7 @@ npm install
 npm run dev
 ```
 
-2. Abre el puerto `5173` en Codespaces para ver la app.
+2. Abre el puerto `5173` en Codespaces para visualizar la app.
 
 ---
 
