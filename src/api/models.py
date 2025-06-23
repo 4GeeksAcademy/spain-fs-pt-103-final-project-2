@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import Mapped, mapped_column
+from datetime import datetime
 db = SQLAlchemy()
 
 
@@ -36,6 +37,19 @@ class Favorite(db.Model):
 
 user = db.relationship('User', backref='favorites')
 recipe = db.relationship('Recipe')
+
+class Peso(db.Model):
+    __tablename__ = 'pesos'
+
+    id = db.Column(db.Integer, primary_key=True)
+    peso = db.Column(db.Float, nullable=False)
+    fecha = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+class Ejercicio(db.Model):
+    __tablename__ = 'ejercicios'
+
+    id = db.Column(db.Integer, primary_key=True)
+    fecha = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
 
 def serialize(self):

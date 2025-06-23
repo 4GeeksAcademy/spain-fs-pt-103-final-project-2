@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar.jsx";
-import "../index.css";
+/*import "../index.css";*/
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Home = () => {
@@ -48,7 +48,7 @@ export const Home = () => {
 			{/* Contenido */}
 			<section className="content">
 				<div className="content-container">
-					<h2 className="section-title">¿Por qué elegir RecipeAI?</h2>
+					<h2 className="section-title">¿Por qué elegir SmartRecipe?</h2>
 
 					<div className="features-grid">
 						<div className="feature">
