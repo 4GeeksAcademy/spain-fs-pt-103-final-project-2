@@ -13,9 +13,8 @@ export const Navbar = () => {
             className="logo-img"
           />
 		  <div className="auth-buttons">
-            <Link to="/Home" className="btn">Home</Link>
+            <Link to="/" className="btn">Home</Link>
             <Link to="/ListaCompra" className="btn">Lista de la compra</Link>
-            <Link to="/Dashboard" className="btn">Dashboard</Link>
             <Link to="/Login" className="btn">Iniciar sesión</Link>
             <Link to="/Register" className="btn">Registrarse</Link>
           </div>
