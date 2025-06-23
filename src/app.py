@@ -35,6 +35,7 @@ def create_app():
     app.register_blueprint(api_auth, url_prefix="/api")
     app.register_blueprint(chat_api, url_prefix="/api")
 
+
     return app
 
 

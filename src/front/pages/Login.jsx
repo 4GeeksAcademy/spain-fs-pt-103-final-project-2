@@ -3,50 +3,44 @@ import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Login = () => {
-  const { store, dispatch, login } = useGlobalReducer();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
-  
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const success = await actions.login(email, password);
-    if (success) {
-      navigate("/Dashboard");
-    } else {
-      alert("Login failed");
-    }
-  };
+    const { login } = useGlobalReducer();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const navigate = useNavigate();
 
-  return (
-    <div className="container">
-      <h1 className="text-center mt-5">Login</h1>
-      <form onSubmit={handleLogin}>
-        <div className="mb-3">
-          <label>Email</label>
-          <input
-            type="email"
-            className="form-control"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        const success = await login(email, password);
+        if (success) {
+            navigate("/dashboard");
+        } else {
+            alert("Credenciales inválidas");
+        }
+    };
+
+    return (
+        <div className="auth-page login-page">
+            <h1 className="hero-title">Iniciar sesión</h1>
+            <form className="auth-form" onSubmit={handleLogin}>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Correo electrónico"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                <button type="submit" className="cta-button">Entrar</button>
+            </form>
         </div>
-        <div className="mb-3">
-          <label>Password</label>
-          <input
-            type="password"
-            className="form-control"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-primary w-100">
-          Login
-        </button>
-      </form>
-    </div>
-  );
+    );
 };
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+import "/workspaces/spain-fs-pt-103-final-project-2/src/front/index.css";
 import AppRoutes from './routes';
 import { BackendURL } from './components/BackendURL';
 import { StoreProvider } from './hooks/useGlobalReducer';
