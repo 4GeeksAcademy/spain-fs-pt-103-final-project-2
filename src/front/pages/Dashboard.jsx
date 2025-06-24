@@ -82,13 +82,20 @@ export default function Dashboard() {
 
   const handlePromptSend = async () => {
     setLoading(true);
+    console.log("Enviando prompt a OpenAI:", prompt);
+    console.log("API_URL:", API_URL);
+
     try {
       const res = await fetch(`${API_URL}/api/openai/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: prompt })
       });
+      console.log("Status de OpenAI:", res.status)
+      console.log("Headers de OpenAI:", res.headers);
       const data = await res.json();
+      console.log("Datos recibidos de backend:", data);
+      console.log("Campo Reply:", data.reply);
       setResponse(data.reply || "Sin respuesta");
     } catch (err) {
       console.error("Error al consultar OpenAI:", err);
