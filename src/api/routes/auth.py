@@ -3,6 +3,7 @@ from api.models import User
 from api.models import db
 from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
+import re
 
 api_auth = Blueprint("api_auth", __name__)
 
@@ -21,6 +22,11 @@ def options():
     return '', 204
 
 
+def is_valid_password(password):
+    pattern = r'^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$'
+    return re.match(pattern, password) is not None
+
+
 @api_auth.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
@@ -29,6 +35,11 @@ def register():
 
     if not email or not password:
         return jsonify({"msg": "Email y contraseña requeridos"}), 400
+
+    if not is_valid_password(password):
+        return jsonify({
+            "msg": "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo"
+        }), 400
 
     if User.query.filter_by(email=email).first():
         return jsonify({"msg": "El usuario ya existe"}), 400
