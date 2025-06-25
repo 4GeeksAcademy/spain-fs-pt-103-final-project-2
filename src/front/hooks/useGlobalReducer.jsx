@@ -45,6 +45,30 @@ const useGlobalReducer = () => {
         dispatch({ type: "logout" });
     };
 
+    const register = async (email, password) => {
+    try {
+        const res = await fetch(`${API_URL}/api/register`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        if (!res.ok) {
+            const data = await res.json();
+            console.error("Registro fallido:", data?.msg || res.statusText);
+            return false;
+        }
+
+        return true;
+    } catch (err) {
+        console.error("Error al registrar usuario:", err);
+        return false;
+    }
+};
+
+
     const syncTokenFromStorage = () => {
         const token = localStorage.getItem("token");
         if (token) {
@@ -116,6 +140,7 @@ const useGlobalReducer = () => {
         dispatch,
         login,
         logout,
+        register,
         syncTokenFromStorage,
         getFavorites,
         addFavorite,
