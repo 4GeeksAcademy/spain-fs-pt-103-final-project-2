@@ -1,4 +1,4 @@
-import React, { useContext, useReducer } from "react";
+import React, { act, useContext, useReducer } from "react";
 import reducer, { initialState, StoreContext } from "../store";
 import { API_URL } from "../config";
 
@@ -139,7 +139,9 @@ const useGlobalReducer = () => {
         store,
         dispatch,
         login,
+        actions: {
         logout,
+        },
         register,
         syncTokenFromStorage,
         getFavorites,

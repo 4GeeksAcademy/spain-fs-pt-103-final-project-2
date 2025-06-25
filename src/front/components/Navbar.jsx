@@ -10,8 +10,8 @@ export const Navbar = () => {
   const isLoggedIn = store.token !== null && store.token !== "";
 
   const handleLogout = () => {
-    actions.logout(); // limpia token del contexto
-    navigate("/"); // redirige a Home
+    actions.logout();
+    navigate("/");
   };
 
   return (
@@ -26,13 +26,14 @@ export const Navbar = () => {
 
         {isLoggedIn ? (
           <>
+            <Link to="/dashboard" className="btn">Dashboard</Link>
             <Link to="/ListaCompra" className="btn">Lista de la compra</Link>
             <button onClick={handleLogout} className="btn">Cerrar sesión</button>
           </>
         ) : (
           <>
-            <Link to="/Login" className="btn">Iniciar sesión</Link>
-            <Link to="/Register" className="btn">Registrarse</Link>
+            <Link to="/login" className="btn">Iniciar sesión</Link>
+            <Link to="/register" className="btn">Registrarse</Link>
           </>
         )}
       </div>
