@@ -11,16 +11,16 @@ export const initialState = {
 
 export default function reducer(state, action) {
   switch (action.type) {
-    case "set_user":
-      return { ...state, user: action.payload };
     case "set_token":
       return { ...state, token: action.payload };
-    case "set_message":
-      return { ...state, message: action.payload };
+    case "set_user":
+      return { ...state, user: action.payload };
     case "set_favorites":
       return { ...state, favorites: action.payload };
+    case "set_message":
+      return { ...state, message: action.payload };
     case "logout":
-      return { ...initialState };
+      return { ...state, token: null, user: null };
     default:
       return state;
   }
