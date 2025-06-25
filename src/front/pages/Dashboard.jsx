@@ -566,14 +566,14 @@ export default function Home() {
           <button type="submit" disabled={loading}>
             {loading ? "Consultando..." : "Enviar a OpenAI"}
           </button>
-        </form>
-        {response && (
-          <div className="ai-response">
-            <h3>Respuesta:</h3>
-            <p>{response}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+                </form>
+                {response && (
+                  <div className="chatbot-response">
+                    <strong>Respuesta:</strong>
+                    <div>{response}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
