@@ -553,7 +553,7 @@ export default function Home() {
         </div>
       </div>
       {/* Prompt para el chatbot */}
-      <div className="chatbot-prompt">
+      <div className="chat-section">
         <h2>Chat con la IA</h2>
         <form onSubmit={(e) => { e.preventDefault(); handlePromptSend(); }}>
           <input
