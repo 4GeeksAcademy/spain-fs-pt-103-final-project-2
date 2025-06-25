@@ -32,23 +32,24 @@ def get_user():
     return jsonify({"id": user.id, "email": user.email}), 200
 
 
-@api_users.route("/register", methods=["POST"])
+@api_users.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
     email = data.get("email")
     password = data.get("password")
-    print(data)
+
     if not email or not password:
-        return jsonify({"msg": "Email y contraseña son obligatorios"}), 400
+        return jsonify({"msg": "Faltan datos"}), 400
 
     if User.query.filter_by(email=email).first():
-        return jsonify({"msg": "El email ya está registrado"}), 409
+        return jsonify({"msg": "El usuario ya existe"}), 409
 
-    new_user = User(email=email, password=generate_password_hash(password))
-    db.session.add(new_user)
+    user = User(email=email)
+    user.set_password(password)
+    db.session.add(user)
     db.session.commit()
 
-    return jsonify({"msg": "Usuario registrado correctamente"}), 201
+    return jsonify({"msg": "Usuario creado exitosamente"}), 201
 
 
 @api_users.route("/login", methods=["POST"])

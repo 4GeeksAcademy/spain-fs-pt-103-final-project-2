@@ -4,7 +4,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 import "../index.css";
 
 export const Register = () => {
-    const { register } = useGlobalReducer();
+    const { register } = useGlobalReducer(); // ✅ Se llama dentro del componente
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [registerSuccess, setRegisterSuccess] = useState(false);
