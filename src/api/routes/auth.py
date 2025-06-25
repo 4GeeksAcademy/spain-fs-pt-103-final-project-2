@@ -58,6 +58,14 @@ def login():
     email = data.get("email")
     password = data.get("password")
 
+    if not email or not password:
+        return jsonify({"msg": "Email y contraseña requeridos"}), 400
+
+    if not is_valid_password(password):
+        return jsonify({
+            "msg": "Formato de contraseña inválido. Debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo"
+        }), 400
+
     user = User.query.filter_by(email=email).first()
 
     if user and check_password_hash(user.password, password):
