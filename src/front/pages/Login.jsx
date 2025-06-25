@@ -10,8 +10,19 @@ export const Login = () => {
     const [loginSuccess, setLoginSuccess] = useState(false);
     const navigate = useNavigate();
 
+    const isValidPassword = (password) => {
+        const pattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        return pattern.test(password);
+    };
+
     const handleLogin = async (e) => {
         e.preventDefault();
+
+        if (!isValidPassword(password)) {
+            alert("Formato de contraseña inválido. Debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo.");
+            return;
+        }
+
         const successLogin = await login(email, password);
         if (successLogin) {
             setLoginSuccess(true);
