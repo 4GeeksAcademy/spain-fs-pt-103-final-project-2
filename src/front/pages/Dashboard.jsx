@@ -212,6 +212,27 @@ export default function Home() {
   return (
     <div className="home-bg">
       <div className="home-main-grid">
+        {/* Prompt para el chatbot */}
+        <div className="chat-section">
+        <h2>Chat con la IA</h2>
+        <form onSubmit={(e) => { e.preventDefault(); handlePromptSend(); }}>
+          <input
+            type="text"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Escribe tu pregunta para la IA..."
+            required
+          />
+          <button type="submit" disabled={loading}>
+            {loading ? "Consultando..." : "Enviar a OpenAI"}
+          </button>
+                </form>
+                {response && (
+                  <div className="chatbot-response">
+                    <strong>Respuesta:</strong>
+                    <div>{response}</div>
+                  </div>
+                )}
         <div className="home-col">
           <div className="home-block">
             <div className="home-block-header">
@@ -553,26 +574,7 @@ export default function Home() {
         </div>
       </div>
       {/* Prompt para el chatbot */}
-      <div className="chat-section">
-        <h2>Chat con la IA</h2>
-        <form onSubmit={(e) => { e.preventDefault(); handlePromptSend(); }}>
-          <input
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Escribe tu pregunta para la IA..."
-            required
-          />
-          <button type="submit" disabled={loading}>
-            {loading ? "Consultando..." : "Enviar a OpenAI"}
-          </button>
-                </form>
-                {response && (
-                  <div className="chatbot-response">
-                    <strong>Respuesta:</strong>
-                    <div>{response}</div>
-                  </div>
-                )}
+      
               </div>
             </div>
           );

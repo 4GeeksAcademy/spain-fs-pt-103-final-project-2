@@ -1,30 +1,25 @@
 from flask import Blueprint, request, jsonify
-from datetime import datetime
+from datetime import datetime, timezone
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
+# Blueprints
 peso_api = Blueprint("peso_api", __name__)
 ejercicio_api = Blueprint("ejercicio_api", __name__)
 usuario_api = Blueprint("usuario_api", __name__)
 estadisticas_api = Blueprint("estadisticas_api", __name__)
 
-# --- Simulaciones en memoria ---
+# Simulaciones en memoria
 USUARIOS_DB = {}       # user_id: {edad, altura_cm, peso_actual, meta_peso}
 PESOS_DB = {}          # user_id: [ {peso, fecha} ]
 EJERCICIO_DB = {}      # user_id: [ {dia, fecha} ]
 
 
-# --- Función auxiliar para identificar usuario ---
-def get_user_id():
-    user_id = request.headers.get("X-User-Id")
-    if not user_id:
-        return None
-    return user_id
-
-
 # --- DATOS PERSONALES ---
 
 @usuario_api.route("/usuario/datos", methods=["GET"])
+@jwt_required()
 def obtener_datos_usuario():
-    user_id = get_user_id()
+    user_id = get_jwt_identity()
     if not user_id or user_id not in USUARIOS_DB:
         return jsonify({"error": "Usuario no encontrado"}), 404
 
@@ -42,12 +37,11 @@ def obtener_datos_usuario():
         "diferencia": diferencia
     }), 200
 
-@usuario_api.route("/usuario/datos", methods=["POST"])
-def actualizar_datos_usuario():
-    user_id = get_user_id()
-    if not user_id:
-        return jsonify({"error": "Falta X-User-Id"}), 400
 
+@usuario_api.route("/usuario/datos", methods=["POST"])
+@jwt_required()
+def actualizar_datos_usuario():
+    user_id = get_jwt_identity()
     data = request.get_json()
     required_fields = ["edad", "altura_cm", "peso_actual", "meta_peso"]
     if not all(field in data for field in required_fields):
@@ -66,18 +60,16 @@ def actualizar_datos_usuario():
 # --- REGISTRO DE PESO ---
 
 @peso_api.route("/pesos", methods=["GET"])
+@jwt_required()
 def obtener_pesos():
-    user_id = get_user_id()
-    if not user_id:
-        return jsonify([]), 200
+    user_id = get_jwt_identity()
     return jsonify(PESOS_DB.get(user_id, [])), 200
 
-@peso_api.route("/pesos", methods=["POST"])
-def guardar_peso():
-    user_id = get_user_id()
-    if not user_id:
-        return jsonify({"error": "Falta X-User-Id"}), 400
 
+@peso_api.route("/pesos", methods=["POST"])
+@jwt_required()
+def guardar_peso():
+    user_id = get_jwt_identity()
     data = request.get_json()
     peso = data.get("peso")
     fecha = data.get("fecha", datetime.utcnow().isoformat())
@@ -97,18 +89,16 @@ def guardar_peso():
 # --- DÍAS DE EJERCICIO ---
 
 @ejercicio_api.route("/ejercicio", methods=["GET"])
+@jwt_required()
 def obtener_ejercicio():
-    user_id = get_user_id()
-    if not user_id:
-        return jsonify([]), 200
+    user_id = get_jwt_identity()
     return jsonify(EJERCICIO_DB.get(user_id, [])), 200
 
-@ejercicio_api.route("/ejercicio", methods=["POST"])
-def guardar_ejercicio():
-    user_id = get_user_id()
-    if not user_id:
-        return jsonify({"error": "Falta X-User-Id"}), 400
 
+@ejercicio_api.route("/ejercicio", methods=["POST"])
+@jwt_required()
+def guardar_ejercicio():
+    user_id = get_jwt_identity()
     data = request.get_json()
     dia = data.get("dia")
     fecha = data.get("fecha", datetime.utcnow().isoformat())
@@ -124,16 +114,17 @@ def guardar_ejercicio():
 # --- ESTADÍSTICAS ---
 
 @estadisticas_api.route("/estadisticas/totales", methods=["GET"])
+@jwt_required()
 def obtener_estadisticas_totales():
-    user_id = get_user_id()
-    if not user_id or user_id not in EJERCICIO_DB:
+    user_id = get_jwt_identity()
+    if user_id not in EJERCICIO_DB:
         return jsonify({
             "esta_semana": 0,
             "este_mes": 0,
             "este_año": 0
         }), 200
 
-    ahora = datetime.utcnow()
+    ahora = datetime.now(timezone.utc)
     semana_actual = ahora.isocalendar().week
     mes_actual = ahora.month
     año_actual = ahora.year

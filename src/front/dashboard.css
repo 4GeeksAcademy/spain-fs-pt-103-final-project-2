@@ -16,7 +16,6 @@ body, html {
 .home-main-grid {
   max-width: 1200px;
   margin: 0 auto;
-  display: grid;
   grid-template-columns: 1.3fr 1fr;
   gap: 2.5rem;
   padding: 0 1.5rem;
@@ -114,7 +113,6 @@ body, html {
   color: #4a2370;
   font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 .home-input:focus {
@@ -380,6 +378,7 @@ body, html {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   color: #333;
   font-family: "Segoe UI", sans-serif;
+   margin-bottom: 0.5rem;
 }
 
 .chat-section h2 {
