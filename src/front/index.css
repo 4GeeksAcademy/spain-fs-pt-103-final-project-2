@@ -3,7 +3,7 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   color: #333;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #545178 0%, #764ba2 100%);
   min-height: 100vh;
   margin: 0;
   padding: 0;
@@ -94,7 +94,7 @@
 }
 
 .btn-register:hover {
-  background: #5e3c8e;
+  background: #8e3c3c;
   transform: translateY(-2px);
 }
 
@@ -128,10 +128,10 @@
 }
 
 .hero-title {
-  font-size: 3.5rem;
-  font-weight: 800;
+  font-size: 4.5rem;
+  font-weight: 900;
   margin-bottom: 1rem;
-  background: linear-gradient(90deg, #9cf38b, #a5ddee);
+  background: linear-gradient(0deg,#fbf7ff, #ebebeb 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

@@ -39,7 +39,7 @@ export const Home = () => {
 				<div className="hero-container">
 					<h1 className="hero-title">Cocina Inteligente con IA</h1>
 					<p className="hero-subtitle">
-						Transforma tus ingredientes en recetas deliciosas y personalizadas con el poder de la inteligencia artificial
+						Crea nuevas recetas con la ayuda de la IA y prueba los nuevos y deliciosos platos para cada ocasión.
 					</p>
 					<Link to="/register" className="btn free">Empezar Gratis</Link>
 				</div>
@@ -52,7 +52,7 @@ export const Home = () => {
 
 					<div className="features-grid">
 						<div className="feature">
-							<div className="feature-icon">🥘</div>
+							<div className="feature-icon">🍳</div>
 							<h3>Recetas Personalizadas</h3>
 							<p>Crea platos únicos basados en los ingredientes que tienes en casa y tus preferencias alimentarias</p>
 						</div>
@@ -64,9 +64,9 @@ export const Home = () => {
 						</div>
 
 						<div className="feature">
-							<div className="feature-icon">❤️</div>
-							<h3>Recetas Favoritas</h3>
-							<p>Guarda y organiza las recetas que más te gustan para tenerlas siempre a mano</p>
+							<div className="feature-icon">🛒</div>
+							<h3>Lista de la compra</h3>
+							<p>Guarda y organiza tu lista de la compra para tenerla siempre a mano</p>
 						</div>
 					</div>
 				</div>
