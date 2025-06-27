@@ -3,13 +3,13 @@ body, html {
   margin-top: 40px;
   padding: 0;
   font-family: 'Inter', system-ui, sans-serif;
-  background: linear-gradient(120deg, #e0e7ff 0%, #b347c6 100%);
+  background: linear-gradient(135deg, #545178 0%, #764ba2 100%);
   color: #222;
 }
 
 .home-bg {
   min-height: 100vh;
-  background: linear-gradient(120deg, #e0e7ff 0%, #b347c6 100%);
+  background: linear-gradient(135deg, #8a85c0 0%, #8e59c3 100%);
   padding: 2.5rem 0 2rem 0;
 }
 
