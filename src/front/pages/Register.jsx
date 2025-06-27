@@ -4,14 +4,25 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 import "../index.css";
 
 export const Register = () => {
-    const { register } = useGlobalReducer(); // ✅ Se llama dentro del componente
+    const { register } = useGlobalReducer();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [registerSuccess, setRegisterSuccess] = useState(false);
     const navigate = useNavigate();
 
+    const isValidPassword = (password) => {
+        const pattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        return pattern.test(password);
+    };
+
     const handleRegister = async (e) => {
         e.preventDefault();
+
+        if (!isValidPassword(password)) {
+            alert("La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo.");
+            return;
+        }
+
         const success = await register(email, password);
         if (success) {
             setRegisterSuccess(true);

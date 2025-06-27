@@ -11,6 +11,8 @@ from flask_cors import CORS
 from flask import Flask, jsonify
 from api.routes.pesoejercicio import peso_api
 from api.routes.pesoejercicio import ejercicio_api
+from api.routes.pesoejercicio import usuario_api
+from api.routes.pesoejercicio import estadisticas_api
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -38,6 +40,8 @@ app.register_blueprint(api_recipes, url_prefix="/api")
 app.register_blueprint(api_auth, url_prefix="/api")
 app.register_blueprint(peso_api, url_prefix="/api")
 app.register_blueprint(ejercicio_api, url_prefix="/api")
+app.register_blueprint(usuario_api, url_prefix="/api")
+app.register_blueprint(estadisticas_api, url_prefix="/api")
 # OpenAI Chat API
 app.register_blueprint(chat_api)
 

@@ -1,5 +1,6 @@
 import "../dashboard.css";
 import React, { useState } from "react";
+import { API_URL } from "../config";
 
 const diasSemanaBase = [
   { dia: 'Lun', activo: false },
@@ -180,14 +181,33 @@ export default function Home() {
   }
 
   // Prompt para el chatbot
-  const [prompt, setPrompt] = useState("");
+  const handlePromptSend = async () => {
+    setLoading(true);
+    console.log("Enviando prompt a OpenAI:", prompt);
+    console.log("API_URL:", API_URL);
 
-  function handlePromptSend() {
-    if (prompt.trim() === "") return;
-
-    console.log("Prompt enviado:", prompt);
-    setPrompt("");
+    try {
+      const res = await fetch(`${API_URL}/api/openai/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: prompt })
+      });
+      console.log("Status de OpenAI:", res.status)
+      console.log("Headers de OpenAI:", res.headers);
+      const data = await res.json();
+      console.log("Datos recibidos de backend:", data);
+      console.log("Campo Reply:", data.reply);
+      setResponse(data.reply || "Sin respuesta");
+    } catch (err) {
+      console.error("Error al consultar OpenAI:", err);
+      setResponse("Error al conectar con el backend.");
+    } finally {
+      setLoading(false);
+    }
   }
+  const [prompt, setPrompt] = useState("");
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
 
   return (
     <div className="home-bg">
@@ -533,20 +553,27 @@ export default function Home() {
         </div>
       </div>
       {/* Prompt para el chatbot */}
-      <div className="chatbot-prompt">
-        <input
-          type="text"
-          placeholder="Escribe tu mensaje..."
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handlePromptSend()}
-          className="chatbot-input"
-        />
-        <button onClick={handlePromptSend} className="chatbot-btn">
-          Enviar
-        </button>
-      </div>
-    </div>
-
-  );
-}
+      <div className="chat-section">
+        <h2>Chat con la IA</h2>
+        <form onSubmit={(e) => { e.preventDefault(); handlePromptSend(); }}>
+          <input
+            type="text"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Escribe tu pregunta para la IA..."
+            required
+          />
+          <button type="submit" disabled={loading}>
+            {loading ? "Consultando..." : "Enviar a OpenAI"}
+          </button>
+                </form>
+                {response && (
+                  <div className="chatbot-response">
+                    <strong>Respuesta:</strong>
+                    <div>{response}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
