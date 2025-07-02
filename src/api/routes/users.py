@@ -1,10 +1,11 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
-from api.models import User
-from ..models import db
+from api.models import db, User, UserData, datetime
 
 api_users = Blueprint("api_users", __name__)
+
+# CORS Headers
 
 
 @api_users.after_request
@@ -21,6 +22,8 @@ def apply_cors(response):
 def options():
     return '', 204
 
+# Usuario
+
 
 @api_users.route("/user", methods=["GET"])
 @jwt_required()
@@ -31,8 +34,10 @@ def get_user():
         return jsonify({"msg": "Usuario no encontrado"}), 404
     return jsonify({"id": user.id, "email": user.email}), 200
 
+# Registro de usuario
 
-@api_users.route('/api/register', methods=['POST'])
+
+@api_users.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
     email = data.get("email")
@@ -51,6 +56,8 @@ def register():
 
     return jsonify({"msg": "Usuario creado exitosamente"}), 201
 
+# Login de usuario
+
 
 @api_users.route("/login", methods=["POST"])
 def login():
@@ -64,6 +71,18 @@ def login():
 
     token = create_access_token(identity=user.id)
     return jsonify({"access_token": token}), 200
+
+# Perfil de usuario
+
+
+@api_users.route("/user", methods=["GET"])
+@jwt_required()
+def get_user():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "Usuario no encontrado"}), 404
+    return jsonify({"id": user.id, "email": user.email}), 200
 
 
 @api_users.route("/user", methods=["PUT"])
@@ -100,3 +119,52 @@ def delete_user():
     db.session.delete(user)
     db.session.commit()
     return jsonify({"msg": "Cuenta eliminada"}), 200
+
+# Datos del usuario
+
+
+@api_users.route('/user/data', methods=['GET'])
+@jwt_required()
+def obtener_datos_usuario():
+    user_id = get_jwt_identity()
+    datos = UserData.query.filter_by(user_id=user_id).first()
+    if not datos:
+        return jsonify({"message": "Datos no encontrados"}), 404
+
+    altura_m = datos.altura / 100
+    imc = round(datos.peso / (altura_m ** 2), 1)
+
+    return jsonify({
+        "edad": datos.edad,
+        "altura": datos.altura,
+        "peso": datos.peso,
+        "imc": imc
+    }), 200
+
+
+@api_users.route('/user/data', methods=['POST'])
+@jwt_required()
+def actualizar_datos_usuario():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('edad', 'altura', 'peso')):
+        return jsonify({"message": "Datos incompletos"}), 400
+
+    datos = UserData.query.filter_by(user_id=user_id).first()
+
+    if datos:
+        datos.edad = data['edad']
+        datos.altura = data['altura']
+        datos.peso = data['peso']
+    else:
+        datos = UserData(
+            edad=data['edad'],
+            altura=data['altura'],
+            peso=data['peso'],
+            user_id=user_id
+        )
+        db.session.add(datos)
+
+    db.session.commit()
+    return jsonify({"message": "Datos actualizados correctamente"}), 200
