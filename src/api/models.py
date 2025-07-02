@@ -1,7 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
-from flaks_migrate import Migrate
 from api.models import db
 db = SQLAlchemy()
 
