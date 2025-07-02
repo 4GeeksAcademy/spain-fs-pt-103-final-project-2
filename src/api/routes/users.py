@@ -1,7 +1,8 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
-from api.models import db, User, UserData, datetime
+from api.models import db, User, UserData
+from datetime import datetime
 
 api_users = Blueprint("api_users", __name__)
 
@@ -131,13 +132,16 @@ def obtener_datos_usuario():
     if not datos:
         return jsonify({"message": "Datos no encontrados"}), 404
 
-    altura_m = datos.altura / 100
-    imc = round(datos.peso / (altura_m ** 2), 1)
+    altura_m = datos.altura_cm / 100
+    imc = round(datos.peso_actual / (altura_m ** 2), 1)
+    diferencia = round(datos.meta_peso - datos.peso_actual, 1)
 
     return jsonify({
         "edad": datos.edad,
-        "altura": datos.altura,
-        "peso": datos.peso,
+        "altura_cm": datos.altura_cm,
+        "peso_actual": datos.peso_actual,
+        "meta_peso": datos.meta_peso,
+        "diferencia": diferencia,
         "imc": imc
     }), 200
 
@@ -148,20 +152,31 @@ def actualizar_datos_usuario():
     user_id = get_jwt_identity()
     data = request.get_json()
 
-    if not data or not all(key in data for key in ('edad', 'altura', 'peso')):
+    required_fields = ('edad', 'altura_cm', 'peso_actual', 'meta_peso')
+    if not data or not all(key in data for key in required_fields):
         return jsonify({"message": "Datos incompletos"}), 400
+
+    try:
+        edad = int(data['edad'])
+        altura_cm = float(data['altura_cm'])
+        peso_actual = float(data['peso_actual'])
+        meta_peso = float(data['meta_peso'])
+    except (ValueError, TypeError):
+        return jsonify({"message": "Los datos deben ser numéricos válidos"}), 400
 
     datos = UserData.query.filter_by(user_id=user_id).first()
 
     if datos:
-        datos.edad = data['edad']
-        datos.altura = data['altura']
-        datos.peso = data['peso']
+        datos.edad = edad
+        datos.altura_cm = altura_cm
+        datos.peso_actual = peso_actual
+        datos.meta_peso = meta_peso
     else:
         datos = UserData(
-            edad=data['edad'],
-            altura=data['altura'],
-            peso=data['peso'],
+            edad=edad,
+            altura_cm=altura_cm,
+            peso_actual=peso_actual,
+            meta_peso=meta_peso,
             user_id=user_id
         )
         db.session.add(datos)
