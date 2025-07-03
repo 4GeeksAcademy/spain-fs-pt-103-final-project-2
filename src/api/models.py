@@ -13,6 +13,17 @@ class User(db.Model):
     pesos = db.relationship("Peso", backref="user", lazy=True)
     ejercicios = db.relationship("Ejercicio", backref="user", lazy=True)
 
+    # Nuevos campos
+    nombre = db.Column(db.String(120), nullable=True)
+    apellido = db.Column(db.String(120), nullable=True)
+    fecha_nacimiento = db.Column(db.Date, nullable=True)
+    altura = db.Column(db.Float, nullable=True)
+    peso_actual = db.Column(db.Float, nullable=True)
+    meta_peso = db.Column(db.Float, nullable=True)
+
+    # Relación con ítems de compra
+    shopping_items = db.relationship('ShoppingItem', backref='user', lazy=True)
+
 
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,6 +62,7 @@ class Peso(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 
+
 class Ejercicio(db.Model):
     __tablename__ = 'ejercicios'
     id = db.Column(db.Integer, primary_key=True)
@@ -83,3 +95,14 @@ def serialize(self):
         'urecipe_id': self.user_id,
         'user_id': self.user_id
     }
+
+
+# ✅ NUEVO: Modelo para ítems de la lista de compras
+class ShoppingItem(db.Model):
+    __tablename__ = 'shopping_items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(120), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
