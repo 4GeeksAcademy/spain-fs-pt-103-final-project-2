@@ -23,7 +23,16 @@ export const Login = () => {
             return;
         }
 
-        const successLogin = await login(email, password);
+        const result = await login(email, password);
+
+        // 💾 Guarda el JWT en localStorage si viene como string o como { access_token }
+        if (typeof result === "string") {
+            localStorage.setItem("token", result);
+        } else if (result?.access_token) {
+            localStorage.setItem("token", result.access_token);
+        }
+
+        const successLogin = Boolean(result);
         if (successLogin) {
             setLoginSuccess(true);
             setTimeout(() => navigate("/dashboard"), 1000);
