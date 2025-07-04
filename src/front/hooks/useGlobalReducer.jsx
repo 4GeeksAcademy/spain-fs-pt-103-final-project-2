@@ -28,9 +28,10 @@ const useGlobalReducer = () => {
       if (!res.ok) throw new Error("Credenciales inválidas");
 
       const data = await res.json();
+      console.log("Usuario logueado:", data);
       dispatch({ type: "set_user", payload: data.user });
-      dispatch({ type: "set_token", payload: data.token });
-      localStorage.setItem("token", data.token);
+      dispatch({ type: "set_token", payload: data.access_token });
+      localStorage.setItem("token", data.access_token);
       return true;
     } catch (err) {
       console.error("Error al iniciar sesión:", err);
