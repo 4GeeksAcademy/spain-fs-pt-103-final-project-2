@@ -84,3 +84,13 @@ class ShoppingItem(db.Model):
     category = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def serialize(self):
+        return {
+            'id': self.id,
+            'text': self.text,
+            'category': self.category,
+            'user_id': self.user_id,
+            'created_at': self.created_at.isoformat()
+        
+        }

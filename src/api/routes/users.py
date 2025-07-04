@@ -62,7 +62,7 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({"msg": "Credenciales incorrectas"}), 401
 
-    token = create_access_token(identity=user.id)
+    token = create_access_token(identity=str(user.id))
     return jsonify({"access_token": token}), 200
 
 

@@ -10,91 +10,88 @@ export default function ShoppingList() {
   const categories = ["Carnes", "Bebidas", "Frutas", "Verduras", "Condimentos", "Otros"];
 
   const token = localStorage.getItem("token");
-  const API_URL = "https://animated-broccoli-975xq66wrqpq2x44-5000.app.github.dev"; // cambia si estás en local
+  // HTTPS por defecto: Codespace o .env
+  const API_URL = import.meta.env.VITE_API_URL ?? "https://animated-broccoli-975xq66wrqpq2x44-3001.app.github.dev";
 
-  // Obtener items del usuario al cargar
+  /** Normaliza _id → id */
+  const normalizeItem = (raw) => ({ ...raw, id: raw.id ?? raw._id });
+
+  /** Cargar items */
   useEffect(() => {
-    fetch(`${API_URL}/api/shopping`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(async (res) => {
+    if (!token) return;
+
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/shopping`, {
+          signal: controller.signal,
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      })
-      .then((data) => setItems(data))
-      .catch((err) => console.error("Error cargando items:", err.message));
-  }, []);
+        const data = await res.json();
+        setItems(Array.isArray(data) ? data.map(normalizeItem) : []);
+      } catch (err) {
+        if (err.name !== "AbortError") console.error("Error cargando items:", err.message);
+      }
+    })();
+    return () => controller.abort();
+  }, [token, API_URL]);
 
-  // Agregar item a la base de datos y al estado
-  function addItem() {
-    if (input.trim() === "") return;
+  /** Agregar item */
+  async function addItem() {
+    if (!input.trim() || !token) return;
 
-    const newItem = {
-      text: input.trim(),
-      category: selectedCategory,
-    };
+    const newItem = { text: input.trim(), category: selectedCategory };
 
-    fetch(`${API_URL}/api/shopping`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(newItem),
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      })
-      .then((data) => {
-        if (data.item) {
-          setItems([...items, data.item]);
-          setInput("");
-        }
-      })
-      .catch((err) => console.error("Error al agregar item:", err.message));
+    try {
+      const res = await fetch(`${API_URL}/api/shopping`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newItem),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      if (data.item) {
+        setItems((prev) => [...prev, normalizeItem(data.item)]);
+        setInput("");
+      }
+    } catch (err) {
+      console.error("Error al agregar item:", err.message);
+    }
   }
 
-  // Eliminar item
-  function removeItem(id) {
-    fetch(`${API_URL}/api/shopping/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
-        if (res.ok) {
-          setItems(items.filter((item) => item.id !== id));
-        }
-      })
-      .catch((err) => console.error("Error al eliminar item:", err));
+  /** Eliminar */
+  async function removeItem(id) {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/api/shopping/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) setItems((prev) => prev.filter((item) => item.id !== id));
+      else console.error("El servidor respondió", res.status);
+    } catch (err) {
+      console.error("Error al eliminar item:", err.message);
+    }
   }
 
-  // Filtrar por categoría y búsqueda
-  function getItemsByCategory(category) {
-    return items.filter((item) => {
-      const matchesCategory = item.category === category;
-      const matchesSearch = item.text.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }
-
-  function countItemsByCategory(category) {
-    return items.filter((item) => item.category === category).length;
-  }
+  /** Filtros */
+  const getItemsByCategory = (category) =>
+    items.filter(
+      (item) => item.category === category && item.text.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  const countItemsByCategory = (category) => items.filter((item) => item.category === category).length;
 
   return (
     <div className="shopping-container">
-      {/* Título principal */}
       <div className="header">
         <ShoppingCart className="header-icon" />
         <h1 className="main-title">Lista de Compras</h1>
       </div>
 
-      {/* Sección para agregar items */}
       <div className="add-section">
         <div className="input-group">
           <input
@@ -105,39 +102,33 @@ export default function ShoppingList() {
             onKeyDown={(e) => e.key === "Enter" && addItem()}
             className="text-input"
           />
-
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="category-select"
           >
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
               </option>
             ))}
           </select>
-
           <button onClick={addItem} className="add-button">
-            <Plus size={20} />
-            Agregar
+            <Plus size={20} /> Agregar
           </button>
         </div>
       </div>
 
-      {/* Categorías */}
       <div className="categories-grid">
         {categories.map((category) => {
           const categoryItems = getItemsByCategory(category);
           const totalItems = countItemsByCategory(category);
-
           return (
             <div key={category} className="category-section">
               <div className="category-header">
                 <h2 className="category-title">{category}</h2>
                 <span className="items-count">({totalItems} items)</span>
               </div>
-
               <div className="items-list">
                 {categoryItems.length === 0 ? (
                   <div className="empty-message">
