@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timezone
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from api.models import User, db
 
 # Blueprints
 peso_api = Blueprint("peso_api", __name__)
@@ -20,21 +21,33 @@ EJERCICIO_DB = {}      # user_id: [ {dia, fecha} ]
 @jwt_required()
 def obtener_datos_usuario():
     user_id = get_jwt_identity()
-    if not user_id or user_id not in USUARIOS_DB:
+    
+    try:
+        user_id = int(user_id)
+    except (ValueError, TypeError):
+        return jsonify({"error": "ID de usuario inválido"}), 400
+    
+  
+    user = User.query.get(user_id)
+    if not user:
         return jsonify({"error": "Usuario no encontrado"}), 404
-
-    usuario = USUARIOS_DB[user_id]
-    altura_m = usuario["altura_cm"] / 100
-    imc = round(usuario["peso_actual"] / (altura_m ** 2), 1)
-    diferencia = round(usuario["meta_peso"] - usuario["peso_actual"], 1)
-
+    
+    
+    altura_m = user.altura_cm / 100 if user.altura_cm else 0
+    imc = round(user.peso_actual / (altura_m ** 2), 1) if altura_m > 0 and user.peso_actual else 0
+    diferencia = round(user.meta_peso - user.peso_actual, 1) if user.meta_peso and user.peso_actual else 0
+    
     return jsonify({
-        "edad": usuario["edad"],
-        "altura": usuario["altura_cm"],
-        "peso_actual": usuario["peso_actual"],
-        "meta_peso": usuario["meta_peso"],
+        "edad": user.edad,
+        "altura_cm": user.altura_cm,
+        "peso_actual": user.peso_actual,
+        "meta_peso": user.meta_peso,
         "imc": imc,
-        "diferencia": diferencia
+        "diferencia": diferencia,
+        "nombre": user.nombre,
+        "apellido": user.apellido,
+        "fecha_nacimiento": user.fecha_nacimiento.isoformat() if user.fecha_nacimiento else None,
+        "email": user.email
     }), 200
 
 
@@ -46,15 +59,21 @@ def actualizar_datos_usuario():
     required_fields = ["edad", "altura_cm", "peso_actual", "meta_peso"]
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Faltan campos obligatorios"}), 400
-
-    USUARIOS_DB[user_id] = {
-        "edad": data["edad"],
-        "altura_cm": data["altura_cm"],
-        "peso_actual": data["peso_actual"],
-        "meta_peso": data["meta_peso"]
-    }
-
-    return jsonify({"message": "Datos personales actualizados correctamente."}), 200
+    try:
+        user_id = int(user_id)
+    except (ValueError, TypeError):
+        return jsonify({"error": "ID de usuario inválido"}), 400
+    user = User.query.get(user_id)
+    user.nombre = data.get("nombre", user.nombre)
+    user.apellido = data.get("apellido", user.apellido)
+    user.fecha_nacimiento = datetime.strptime(data["fechaNacimiento"], "%Y-%m-%d").date()
+    user.email = data.get("email", user.email)
+    user.edad = data["edad"]
+    user.altura_cm = data["altura_cm"]
+    user.peso_actual = data["peso_actual"]
+    user.meta_peso = data["meta_peso"]
+    db.session.commit()
+    return jsonify({"message": "Datos personales actualizados correctamente.", "user": user.serialize()}), 200
 
 
 # --- REGISTRO DE PESO ---

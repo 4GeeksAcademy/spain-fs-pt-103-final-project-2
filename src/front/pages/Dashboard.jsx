@@ -70,7 +70,7 @@ export default function Home() {
   // Función para cargar datos del usuario
   const cargarDatosUsuario = async () => {
     try {
-      const token = localStorage.getItem('Token');
+      const token = localStorage.getItem('token');
       
       console.log('Cargando datos - Token existe:', !!token);
       
@@ -79,7 +79,7 @@ export default function Home() {
         return;
       }
 
-      const response = await fetch(`${API_URL}/api/usuario/perfil`, {
+      const response = await fetch(`${API_URL}/api/usuario/datos`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -114,9 +114,10 @@ export default function Home() {
   };
 
   // Cargar datos al montar el componente
+  // ✅ useEffect para cargar datos al iniciar el componente
   useEffect(() => {
     cargarDatosUsuario();
-  }, []);
+  }, []); // Array vacío = se ejecuta solo UNA vez al montar
 
   const iniciarEdicion = () => {
     setTempUserData(userData);
