@@ -112,11 +112,88 @@ export default function Home() {
       console.error('Error cargando datos del usuario:', error);
     }
   };
+  const cargarPesos = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const res = await fetch(`${API_URL}/api/pesos`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setPesosSemanal(data);
+    }
+  };
+const cargarEjercicio = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  const res = await fetch(`${API_URL}/api/ejercicio`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (res.ok) {
+    const data = await res.json();
+    // data es un array de objetos { dia, fecha }
+    // Marcamos como activo cada día que esté en la lista
+    setDiasSemana(diasSemanaBase.map(diaObj => ({
+      ...diaObj,
+      activo: data.some(e => e.dia === diaObj.dia)
+    })));
+  }
+};
+
+// Guardar día de ejercicio en el backend
+const guardarDiaEjercicio = async (dia) => {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  const now = new Date();
+  await fetch(`${API_URL}/api/ejercicio`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ dia, fecha: now.toISOString() })
+  });
+  cargarEjercicio();
+};
+
+// Cuando el usuario marca un día, lo guardamos en el backend si lo activa
+const cambiarDiaEjercicio = idx => {
+  setDiasSemana(prev => {
+    const nuevoEstado = prev.map((dia, i) =>
+      i === idx ? { ...dia, activo: !dia.activo } : dia
+    );
+    // Si lo activamos, lo guardamos en el backend
+    if (!prev[idx].activo) {
+      guardarDiaEjercicio(prev[idx].dia);
+    }
+    // Si lo desactivas, podrías implementar un endpoint para eliminarlo si lo necesitas
+    return nuevoEstado;
+  });
+};
+
+const cargarEstadisticas = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  const res = await fetch(`${API_URL}/api/estadisticas/totales`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (res.ok) {
+    const data = await res.json();
+    setDiasEjercicio({
+      totalMes: data.este_mes,
+      totalAño: data.este_año
+    });
+    // Puedes usar data.esta_semana si lo necesitas
+  }
+};
 
   // Cargar datos al montar el componente
   // ✅ useEffect para cargar datos al iniciar el componente
   useEffect(() => {
     cargarDatosUsuario();
+    cargarPesos();
+    cargarEjercicio();
+    cargarEstadisticas();
   }, []); // Array vacío = se ejecuta solo UNA vez al montar
 
   const iniciarEdicion = () => {
@@ -231,17 +308,29 @@ export default function Home() {
     setTempUserData(prev => ({ ...prev, [campo]: valor }));
   };
 
-  const agregarPeso = () => {
-    if (nuevoPeso && parseFloat(nuevoPeso) > 0) {
-      const now = new Date();
-      const nuevaEntrada = {
-        fecha: now,
-        peso: parseFloat(nuevoPeso)
-      };
-      setPesosSemanal(prev => [...prev, nuevaEntrada]);
+  const agregarPeso = async () => {
+  if (nuevoPeso && parseFloat(nuevoPeso) > 0) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const now = new Date();
+    const nuevaEntrada = {
+      peso: parseFloat(nuevoPeso),
+      fecha: now.toISOString()
+    };
+    const res = await fetch(`${API_URL}/api/pesos`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(nuevaEntrada)
+    });
+    if (res.ok) {
+      cargarPesos(); // Recarga la lista desde el backend
       setNuevoPeso('');
     }
-  };
+  }
+};
 
   const eliminarPesoEspecifico = idx => {
     setPesosSemanal(prev => prev.filter((_, i) => i !== idx));
@@ -251,13 +340,7 @@ export default function Home() {
     setPesosSemanal([]);
   };
 
-  const cambiarDiaEjercicio = idx => {
-    setDiasSemana(prev =>
-      prev.map((dia, i) =>
-        i === idx ? { ...dia, activo: !dia.activo } : dia
-      )
-    );
-  };
+  /* Eliminado: declaración duplicada de cambiarDiaEjercicio */
 
   const iniciarNuevaSemana = () => {
     const diasActivos = diasSemana.filter(dia => dia.activo).length;
