@@ -1,5 +1,6 @@
+
 import "../dashboard.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { API_URL } from "../config";
 
 const diasSemanaBase = [
@@ -56,20 +57,168 @@ export default function Home() {
     metaPeso: "",
   });
   const [editMode, setEditMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [tempUserData, setTempUserData] = useState(userData);
   const [pesosSemanal, setPesosSemanal] = useState([]);
   const [nuevoPeso, setNuevoPeso] = useState('');
   const [diasEjercicio, setDiasEjercicio] = useState({ totalMes: 0, totalAño: 0 });
   const [diasSemana, setDiasSemana] = useState(diasSemanaBase);
+  const [prompt, setPrompt] = useState("");
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Función para cargar datos del usuario
+  const cargarDatosUsuario = async () => {
+    try {
+      const token = localStorage.getItem('Token');
+      
+      console.log('Cargando datos - Token existe:', !!token);
+      
+      if (!token) {
+        console.log('No hay token para cargar datos');
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/usuario/perfil`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Status carga datos:', response.status);
+
+      if (response.ok) {
+        const result = await response.json();
+        const user = result.user || result;
+        
+        const datosUsuario = {
+          nombre: user.nombre || "",
+          apellido: user.apellido || "",
+          fechaNacimiento: user.fecha_nacimiento || "",
+          altura: user.altura_cm?.toString() || "",
+          pesoActual: user.peso_actual?.toString() || "",
+          metaPeso: user.meta_peso?.toString() || "",
+        };
+
+        setUserData(datosUsuario);
+        setTempUserData(datosUsuario);
+        console.log('✅ Datos del usuario cargados:', datosUsuario);
+      } else {
+        console.log('❌ Error cargando datos:', response.status);
+      }
+    } catch (error) {
+      console.error('Error cargando datos del usuario:', error);
+    }
+  };
+
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    cargarDatosUsuario();
+  }, []);
 
   const iniciarEdicion = () => {
     setTempUserData(userData);
     setEditMode(true);
   };
 
-  const guardarCambios = () => {
-    setUserData(tempUserData);
-    setEditMode(false);
+  const guardarCambios = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Obtener token de forma DIRECTA
+      const token = localStorage.getItem('token');
+      
+      // Debug simple
+      console.log('Token obtenido:', token ? 'SÍ EXISTE' : 'NO EXISTE');
+      console.log('Primeros 20 caracteres:', token ? token.substring(0, 20) : 'N/A');
+      
+      // Si no hay token, mostrar alert Y continuar (para debuggear)
+      if (!token) {
+        console.log('❌ No se encontró token');
+        alert('No hay token - esto es para debug, seguimos...');
+        // NO hacemos return, seguimos para ver qué pasa
+      }
+
+      // Validar campos requeridos
+      if (!tempUserData.altura || !tempUserData.pesoActual || !tempUserData.metaPeso) {
+        alert('Error: Los campos altura, peso actual y meta de peso son obligatorios.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Preparar datos para el backend
+      const datosParaBackend = {
+        nombre: tempUserData.nombre || "",
+        apellido: tempUserData.apellido || "",
+        fechaNacimiento: tempUserData.fechaNacimiento || "",
+        edad: calcularEdad(tempUserData.fechaNacimiento),
+        altura_cm: parseFloat(tempUserData.altura),
+        peso_actual: parseFloat(tempUserData.pesoActual),
+        meta_peso: parseFloat(tempUserData.metaPeso),
+      };
+
+      console.log('Enviando datos al backend:', datosParaBackend);
+
+      // Hacer petición con token (si existe)
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Solo agregar Authorization si hay token
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      console.log('Headers a enviar:', headers);
+
+      const response = await fetch(`${API_URL}/api/usuario/datos`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(datosParaBackend)
+      });
+
+      console.log('Status de respuesta:', response.status);
+      const result = await response.json();
+      console.log('Respuesta del backend:', result);
+
+      if (response.ok) {
+        // ✅ Éxito: actualizar estado local con datos del servidor
+        const userFromServer = result.user;
+        
+        // Mapear campos del backend al frontend
+        const datosActualizados = {
+          nombre: userFromServer.nombre || "",
+          apellido: userFromServer.apellido || "",
+          fechaNacimiento: userFromServer.fecha_nacimiento || "",
+          altura: userFromServer.altura_cm?.toString() || "",
+          pesoActual: userFromServer.peso_actual?.toString() || "",
+          metaPeso: userFromServer.meta_peso?.toString() || "",
+        };
+
+        setUserData(datosActualizados);
+        setTempUserData(datosActualizados);
+        setEditMode(false);
+        
+        alert('✅ Datos actualizados correctamente!');
+      } else {
+        // ❌ Error del servidor
+        console.error('Error del servidor:', result);
+        if (response.status === 401) {
+          alert('❌ Error 401: Token inválido o expirado');
+        } else {
+          alert(`Error: ${result.error || 'No se pudieron guardar los datos'}`);
+        }
+      }
+
+    } catch (error) {
+      // ❌ Error de conexión
+      console.error('Error al conectar con el servidor:', error);
+      alert('Error de conexión. Verifica tu internet e intenta nuevamente.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const cancelarEdicion = () => {
@@ -150,19 +299,16 @@ export default function Home() {
   const anchoChart = anchoGrafica - margenIzq - margenDer;
   const altoChart = altoGrafica - margenTop - margenBot;
 
-
   const puntos = pesosSemanal.map((p, i) => {
     const x = margenIzq + (i / Math.max(1, pesosSemanal.length - 1)) * anchoChart;
     const y = margenTop + altoChart - ((p.peso - minY) / rangoY) * altoChart;
     return { x, y, peso: p.peso, fecha: p.fecha };
   });
 
-
   const pathLinea = puntos.length > 1
     ? `M ${puntos[0].x} ${puntos[0].y} ` +
     puntos.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')
     : '';
-
 
   const pathArea = puntos.length > 1
     ? `M ${puntos[0].x} ${margenTop + altoChart} ` +
@@ -180,7 +326,7 @@ export default function Home() {
     lineasGrid.push({ y, valor: valor.toFixed(1) });
   }
 
-  // Prompt para el chatbot
+  // Función para el chatbot
   const handlePromptSend = async () => {
     setLoading(true);
     console.log("Enviando prompt a OpenAI:", prompt);
@@ -205,44 +351,57 @@ export default function Home() {
       setLoading(false);
     }
   }
-  const [prompt, setPrompt] = useState("");
-  const [response, setResponse] = useState("");
-  const [loading, setLoading] = useState(false);
 
   return (
     <div className="home-bg">
       <div className="home-main-grid">
         {/* Prompt para el chatbot */}
         <div className="chat-section">
-        <h2>Chat con la IA</h2>
-        <form onSubmit={(e) => { e.preventDefault(); handlePromptSend(); }}>
-          <input
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Escribe tu pregunta para la IA..."
-            required
-          />
-          <button type="submit" disabled={loading}>
-            {loading ? "Consultando..." : "Enviar a OpenAI"}
-          </button>
-                </form>
-                {response && (
-                  <div className="chatbot-response">
-                    <strong>Respuesta:</strong>
-                    <div>{response}</div>
-                  </div>
-                )}
+          <h2>Chat con la IA</h2>
+          <form onSubmit={(e) => { e.preventDefault(); handlePromptSend(); }}>
+            <input
+              type="text"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Escribe tu pregunta para la IA..."
+              required
+            />
+            <button type="submit" disabled={loading}>
+              {loading ? "Consultando..." : "Enviar a OpenAI"}
+            </button>
+          </form>
+          {response && (
+            <div className="chatbot-response">
+              <strong>Respuesta:</strong>
+              <div>{response}</div>
+            </div>
+          )}
+        </div>
+
         <div className="home-col">
           <div className="home-block">
             <div className="home-block-header">
               <span className="home-block-title">👤 Datos Personales</span>
               {!editMode ? (
-                <button onClick={iniciarEdicion} className="home-btn home-btn-edit">Editar</button>
+                <button onClick={iniciarEdicion} className="home-btn home-btn-edit">
+                  Editar
+                </button>
               ) : (
                 <div>
-                  <button onClick={guardarCambios} className="home-btn home-btn-save">Guardar</button>
-                  <button onClick={cancelarEdicion} className="home-btn home-btn-cancel">Cancelar</button>
+                  <button 
+                    onClick={guardarCambios} 
+                    className="home-btn home-btn-save"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Guardando..." : "Guardar"}
+                  </button>
+                  <button 
+                    onClick={cancelarEdicion} 
+                    className="home-btn home-btn-cancel"
+                    disabled={isLoading}
+                  >
+                    Cancelar
+                  </button>
                 </div>
               )}
             </div>
@@ -255,6 +414,7 @@ export default function Home() {
                     value={tempUserData.nombre}
                     onChange={e => cambiarDatoUsuario('nombre', e.target.value)}
                     className="home-input"
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -264,6 +424,7 @@ export default function Home() {
                     value={tempUserData.apellido}
                     onChange={e => cambiarDatoUsuario('apellido', e.target.value)}
                     className="home-input"
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -273,35 +434,42 @@ export default function Home() {
                     value={tempUserData.fechaNacimiento}
                     onChange={e => cambiarDatoUsuario('fechaNacimiento', e.target.value)}
                     className="home-input"
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
-                  <label className="home-label">Altura (cm)</label>
+                  <label className="home-label">Altura (cm) *</label>
                   <input
                     type="number"
                     value={tempUserData.altura}
                     onChange={e => cambiarDatoUsuario('altura', e.target.value)}
                     className="home-input"
+                    required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
-                  <label className="home-label">Peso Actual (kg)</label>
+                  <label className="home-label">Peso Actual (kg) *</label>
                   <input
                     type="number"
                     step="0.1"
                     value={tempUserData.pesoActual}
                     onChange={e => cambiarDatoUsuario('pesoActual', e.target.value)}
                     className="home-input"
+                    required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
-                  <label className="home-label">Meta de Peso (kg)</label>
+                  <label className="home-label">Meta de Peso (kg) *</label>
                   <input
                     type="number"
                     step="0.1"
                     value={tempUserData.metaPeso}
                     onChange={e => cambiarDatoUsuario('metaPeso', e.target.value)}
                     className="home-input"
+                    required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -338,6 +506,7 @@ export default function Home() {
               </div>
             )}
           </div>
+
           <div className="home-block">
             <div className="home-block-header">
               <span className="home-block-title">📈 Progreso de Peso</span>
@@ -377,7 +546,6 @@ export default function Home() {
                       </linearGradient>
                     </defs>
 
-
                     {lineasGrid.map((linea, i) => (
                       <g key={i}>
                         <line
@@ -401,14 +569,12 @@ export default function Home() {
                       </g>
                     ))}
 
-
                     {pathArea && (
                       <path
                         d={pathArea}
                         fill="url(#areaGradient)"
                       />
                     )}
-
 
                     {pathLinea && (
                       <path
@@ -420,7 +586,6 @@ export default function Home() {
                         strokeLinejoin="round"
                       />
                     )}
-
 
                     {puntos.map((punto, i) => (
                       <g key={i}>
@@ -513,6 +678,7 @@ export default function Home() {
             )}
           </div>
         </div>
+
         <div className="home-col">
           <div className="home-block">
             <div className="home-block-header">
@@ -537,6 +703,7 @@ export default function Home() {
               Completar Semana
             </button>
           </div>
+
           <div className="home-block">
             <div className="home-block-header">
               <span className="home-block-title">📅 Estadísticas Totales</span>
@@ -568,14 +735,10 @@ export default function Home() {
                   >❌</button>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
       </div>
-      {/* Prompt para el chatbot */}
-      
-              </div>
-            </div>
-          );
-        }
+    </div>
+  );
+}
