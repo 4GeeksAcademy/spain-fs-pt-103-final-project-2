@@ -10,14 +10,26 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     recipes = db.relationship('Recipe', backref='user', lazy=True)
-
     # Nuevos campos
     nombre = db.Column(db.String(120), nullable=True)
     apellido = db.Column(db.String(120), nullable=True)
     fecha_nacimiento = db.Column(db.Date, nullable=True)
-    altura = db.Column(db.Float, nullable=True)
+    edad = db.Column(db.Integer, nullable=True)
+    altura_cm= db.Column(db.Float, nullable=True)
     peso_actual = db.Column(db.Float, nullable=True)
     meta_peso = db.Column(db.Float, nullable=True)
+    is_active = db.Column(db.Boolean, default=False)
+    def serialize(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "nombre": self.nombre,
+            "apellido": self.apellido,
+            "fecha_nacimiento": self.fecha_nacimiento.isoformat() if self.fecha_nacimiento else None,
+            "altura": self.altura_cm,
+            "peso_actual": self.peso_actual,
+            "meta_peso": self.meta_peso
+        } 
 
     # Relación con ítems de compra
     shopping_items = db.relationship('ShoppingItem', backref='user', lazy=True)
