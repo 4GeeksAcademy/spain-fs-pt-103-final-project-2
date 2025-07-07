@@ -5,13 +5,13 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 export const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { store, actions } = useGlobalReducer();
+  const { store, logout } = useGlobalReducer();
 
   const isLoggedIn = store.token !== null && store.token !== "";
 
-  const handleLogout = () => {
-    actions.logout();
-    navigate("/");
+  const handleLogout = async () => {
+    await logout();
+    navigate("/", { replace: true });
   };
 
   return (
@@ -23,12 +23,17 @@ export const Navbar = () => {
       />
       <div className="auth-buttons">
         <Link to="/" className="btn">Home</Link>
-
         {isLoggedIn ? (
           <>
             <Link to="/dashboard" className="btn">Dashboard</Link>
             <Link to="/ListaCompra" className="btn">Lista de la compra</Link>
-            <button onClick={handleLogout} className="btn">Cerrar sesión</button>
+            <button
+              onClick={handleLogout}
+              className="btn"
+              type="button"
+            >
+              Cerrar sesión
+            </button>
           </>
         ) : (
           <>
