@@ -124,14 +124,39 @@ export default function Home() {
   };
   // Cambia cargarEjercicio para que NO marque días activos al cargar el Dashboard
   const cargarEjercicio = async () => {
-    // Al cargar, deja todos los días desmarcados
-    setDiasSemana(diasSemanaBase);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setDiasSemana(diasSemanaBase);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/api/ejercicio`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const diasGuardados = await res.json(); // Ej: ["Lun", "Mié"]
+        setDiasSemana(
+          diasSemanaBase.map(d =>
+            diasGuardados.includes(d.dia)
+              ? { ...d, activo: true }
+              : { ...d, activo: false }
+          )
+        );
+      } else {
+        setDiasSemana(diasSemanaBase);
+      }
+    } catch (err) {
+      setDiasSemana(diasSemanaBase);
+    }
   };
 
   // Guardar día de ejercicio en el backend
   const guardarDiaEjercicio = async (dia) => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      alert("Debes iniciar sesión para guardar tus días de ejercicio.");
+      return;
+    }
     const now = new Date();
     await fetch(`${API_URL}/api/ejercicio`, {
       method: 'POST',
@@ -141,7 +166,6 @@ export default function Home() {
       },
       body: JSON.stringify({ dia, fecha: now.toISOString() })
     });
-    // No recargues los días activos aquí
   };
 
   // Eliminar día de ejercicio en el backend
@@ -156,24 +180,30 @@ export default function Home() {
       },
       body: JSON.stringify({ dia })
     });
-    // No recargues los días activos aquí
+    await cargarEjercicio(); // Recarga los días activos desde el backend
+  };
+
+  const eliminarTodosDiasEjercicio = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    await fetch(`${API_URL}/api/ejercicio/todos`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    await cargarEjercicio(); // Recarga los días activos desde el backend
+    setDiasEjercicio({ totalMes: 0, totalAño: 0 }); // Reinicia estadísticas
   };
 
   // Cuando el usuario marca un día, lo guardamos en el backend si lo activa
   const cambiarDiaEjercicio = idx => {
-    setDiasSemana(prev => {
-      const nuevoEstado = prev.map((dia, i) =>
+    setDiasSemana(prev =>
+      prev.map((dia, i) =>
         i === idx ? { ...dia, activo: !dia.activo } : dia
-      );
-      if (!prev[idx].activo) {
-        // Si lo activamos, lo guardamos en el backend
-        guardarDiaEjercicio(prev[idx].dia);
-      } else {
-        // Si lo desactivamos, lo eliminamos del backend
-        eliminarDiaEjercicio(prev[idx].dia);
-      }
-      return nuevoEstado;
-    });
+      )
+    );
   };
 
   const cargarEstadisticas = async () => {
@@ -351,19 +381,35 @@ export default function Home() {
     setPesosSemanal(prev => prev.filter((_, i) => i !== idx));
   };
 
-  const eliminarTodosPesos = () => {
-    setPesosSemanal([]);
+  const eliminarTodosPesos = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    await fetch(`${API_URL}/api/pesos/todos`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    setPesosSemanal([]); // Limpia el estado local
   };
 
   /* Eliminado: declaración duplicada de cambiarDiaEjercicio */
 
-  const iniciarNuevaSemana = () => {
-    const diasActivos = diasSemana.filter(dia => dia.activo).length;
+  // Al pulsar "Completar Semana", guarda los días activos en el backend
+  const iniciarNuevaSemana = async () => {
+    const diasActivos = diasSemana.filter(dia => dia.activo);
+
+    for (const dia of diasActivos) {
+      await guardarDiaEjercicio(dia.dia);
+    }
+
     setDiasEjercicio(prev => ({
-      totalMes: prev.totalMes + diasActivos,
-      totalAño: prev.totalAño + diasActivos
+      totalMes: prev.totalMes + diasActivos.length,
+      totalAño: prev.totalAño + diasActivos.length
     }));
     setDiasSemana(diasSemanaBase);
+    await cargarEjercicio();
   };
 
   const resetearMes = () => {

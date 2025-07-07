@@ -21,22 +21,22 @@ EJERCICIO_DB = {}      # user_id: [ {dia, fecha} ]
 @jwt_required()
 def obtener_datos_usuario():
     user_id = get_jwt_identity()
-    
+
     try:
         user_id = int(user_id)
     except (ValueError, TypeError):
         return jsonify({"error": "ID de usuario inválido"}), 400
-    
-  
+
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "Usuario no encontrado"}), 404
-    
-    
+
     altura_m = user.altura_cm / 100 if user.altura_cm else 0
-    imc = round(user.peso_actual / (altura_m ** 2), 1) if altura_m > 0 and user.peso_actual else 0
-    diferencia = round(user.meta_peso - user.peso_actual, 1) if user.meta_peso and user.peso_actual else 0
-    
+    imc = round(user.peso_actual / (altura_m ** 2),
+                1) if altura_m > 0 and user.peso_actual else 0
+    diferencia = round(user.meta_peso - user.peso_actual,
+                       1) if user.meta_peso and user.peso_actual else 0
+
     return jsonify({
         "edad": user.edad,
         "altura_cm": user.altura_cm,
@@ -66,7 +66,8 @@ def actualizar_datos_usuario():
     user = User.query.get(user_id)
     user.nombre = data.get("nombre", user.nombre)
     user.apellido = data.get("apellido", user.apellido)
-    user.fecha_nacimiento = datetime.strptime(data["fechaNacimiento"], "%Y-%m-%d").date()
+    user.fecha_nacimiento = datetime.strptime(
+        data["fechaNacimiento"], "%Y-%m-%d").date()
     user.email = data.get("email", user.email)
     user.edad = data["edad"]
     user.altura_cm = data["altura_cm"]
@@ -77,13 +78,6 @@ def actualizar_datos_usuario():
 
 
 # --- REGISTRO DE PESO ---
-
-@peso_api.route("/pesos", methods=["GET"])
-@jwt_required()
-def obtener_pesos():
-    user_id = get_jwt_identity()
-    return jsonify(PESOS_DB.get(user_id, [])), 200
-
 
 @peso_api.route("/pesos", methods=["POST"])
 @jwt_required()
@@ -96,13 +90,23 @@ def guardar_peso():
     if peso is None:
         return jsonify({"error": "El campo 'peso' es obligatorio."}), 400
 
-    entrada = {"peso": peso, "fecha": fecha}
-    PESOS_DB.setdefault(user_id, []).append(entrada)
+    PESOS_DB.setdefault(user_id, []).append({"peso": peso, "fecha": fecha})
+    return jsonify({"message": "Peso registrado correctamente."}), 201
 
-    if user_id in USUARIOS_DB:
-        USUARIOS_DB[user_id]["peso_actual"] = peso
 
-    return jsonify({"message": "Peso registrado correctamente.", "data": entrada}), 201
+@peso_api.route("/pesos", methods=["GET"])
+@jwt_required()
+def obtener_pesos():
+    user_id = get_jwt_identity()
+    return jsonify(PESOS_DB.get(user_id, [])), 200
+
+
+@peso_api.route("/pesos/todos", methods=["DELETE"])
+@jwt_required()
+def eliminar_todos_pesos():
+    user_id = get_jwt_identity()
+    PESOS_DB[user_id] = []
+    return jsonify({"message": "Todos los pesos eliminados."}), 200
 
 
 # --- DÍAS DE EJERCICIO ---
@@ -111,7 +115,10 @@ def guardar_peso():
 @jwt_required()
 def obtener_ejercicio():
     user_id = get_jwt_identity()
-    return jsonify(EJERCICIO_DB.get(user_id, [])), 200
+    # Devuelve solo los nombres de los días únicos guardados por el usuario
+    dias = [e["dia"] for e in EJERCICIO_DB.get(user_id, [])]
+    dias_unicos = list(set(dias))
+    return jsonify(dias_unicos), 200
 
 
 @ejercicio_api.route("/ejercicio", methods=["POST"])
@@ -125,9 +132,37 @@ def guardar_ejercicio():
     if dia is None:
         return jsonify({"error": "El campo 'dia' es obligatorio."}), 400
 
+    # Elimina cualquier entrada previa de ese día para el usuario
+    EJERCICIO_DB[user_id] = [e for e in EJERCICIO_DB.get(
+        user_id, []) if e["dia"] != dia]
+
+    # Añade la nueva entrada solo si no existe ya (opcional, por robustez)
     entrada = {"dia": dia, "fecha": fecha}
     EJERCICIO_DB.setdefault(user_id, []).append(entrada)
     return jsonify({"message": "Día de ejercicio registrado correctamente.", "data": entrada}), 201
+
+
+@ejercicio_api.route("/ejercicio/todos", methods=["DELETE"])
+@jwt_required()
+def eliminar_todos_ejercicio():
+    user_id = get_jwt_identity()
+    EJERCICIO_DB[user_id] = []
+    return jsonify({"message": "Todos los días de ejercicio eliminados."}), 200
+
+
+@ejercicio_api.route("/ejercicio", methods=["DELETE"])
+@jwt_required()
+def eliminar_ejercicio():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    dia = data.get("dia")
+    if dia is None:
+        return jsonify({"error": "El campo 'dia' es obligatorio."}), 400
+
+    # Filtra todos los días menos el que se quiere eliminar
+    EJERCICIO_DB[user_id] = [e for e in EJERCICIO_DB.get(
+        user_id, []) if e["dia"] != dia]
+    return jsonify({"message": f"Día '{dia}' eliminado correctamente."}), 200
 
 
 # --- ESTADÍSTICAS ---
