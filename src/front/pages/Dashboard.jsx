@@ -122,21 +122,10 @@ export default function Home() {
       setPesosSemanal(data);
     }
   };
+  // Cambia cargarEjercicio para que NO marque días activos al cargar el Dashboard
   const cargarEjercicio = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const res = await fetch(`${API_URL}/api/ejercicio`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      // data es un array de objetos { dia, fecha }
-      // Marcamos como activo cada día que esté en la lista
-      setDiasSemana(diasSemanaBase.map(diaObj => ({
-        ...diaObj,
-        activo: data.some(e => e.dia === diaObj.dia)
-      })));
-    }
+    // Al cargar, deja todos los días desmarcados
+    setDiasSemana(diasSemanaBase);
   };
 
   // Guardar día de ejercicio en el backend
@@ -152,7 +141,7 @@ export default function Home() {
       },
       body: JSON.stringify({ dia, fecha: now.toISOString() })
     });
-    cargarEjercicio();
+    // No recargues los días activos aquí
   };
 
   // Eliminar día de ejercicio en el backend
@@ -167,7 +156,7 @@ export default function Home() {
       },
       body: JSON.stringify({ dia })
     });
-    cargarEjercicio();
+    // No recargues los días activos aquí
   };
 
   // Cuando el usuario marca un día, lo guardamos en el backend si lo activa
@@ -210,6 +199,9 @@ export default function Home() {
     cargarPesos();
     cargarEjercicio();
     cargarEstadisticas();
+
+    // Al desmontar, limpia los días activos
+    return () => setDiasSemana(diasSemanaBase);
   }, []); // Array vacío = se ejecuta solo UNA vez al montar
 
   const iniciarEdicion = () => {

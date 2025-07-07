@@ -1,4 +1,4 @@
-import React, { useContext, useReducer } from "react";
+import React, { useContext, useReducer, useEffect } from "react";
 import reducer, { initialState, StoreContext } from "../store";
 import { API_URL } from "../config";
 
@@ -39,14 +39,13 @@ const useGlobalReducer = () => {
     }
   };
 
-const logout = () => {
-  dispatch({ type: "set_user", payload: null });
-  dispatch({ type: "set_token", payload: null });
-  localStorage.removeItem("token");
-  sessionStorage.removeItem("token");
-  console.log("Usuario deslogueado");
-  // window.location.reload(); // Elimina esta línea
-};
+  const logout = () => {
+    dispatch({ type: "set_user", payload: null });
+    dispatch({ type: "set_token", payload: null });
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    console.log("Usuario deslogueado");
+  };
 
   const register = async (email, password) => {
     try {
@@ -69,12 +68,13 @@ const logout = () => {
     }
   };
 
-  const syncTokenFromStorage = () => {
+  // Sincroniza el token de localStorage al cargar la app
+  useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
+    if (token && !store.token) {
       dispatch({ type: "set_token", payload: token });
     }
-  };
+  }, [dispatch, store.token]);
 
   const authorizedHeaders = () => ({
     "Content-Type": "application/json",
@@ -179,22 +179,22 @@ const logout = () => {
     }
   };
 
-const getEstadisticasTotales = async () => {
-  try {
-    const res = await fetch(`${API_URL}/api/estadisticas/totales`, {
-      headers: {
-        Authorization: "Bearer " + localStorage.getItem("token")
-      }
-    });
+  const getEstadisticasTotales = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/estadisticas/totales`, {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token")
+        }
+      });
 
-    if (!res.ok) throw new Error("No se pudieron obtener estadísticas");
+      if (!res.ok) throw new Error("No se pudieron obtener estadísticas");
 
-    return await res.json();
-  } catch (err) {
-    console.error("Error al obtener estadísticas:", err);
-    return null;
-  }
-};
+      return await res.json();
+    } catch (err) {
+      console.error("Error al obtener estadísticas:", err);
+      return null;
+    }
+  };
 
   return {
     store,
@@ -202,7 +202,6 @@ const getEstadisticasTotales = async () => {
     login,
     logout,
     register,
-    syncTokenFromStorage,
     getDatosUsuario,
     actualizarDatosUsuario,
     getPesos,
