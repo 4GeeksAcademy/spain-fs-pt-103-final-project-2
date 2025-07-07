@@ -1,4 +1,3 @@
-
 import "../dashboard.css";
 import React, { useState, useEffect } from "react";
 import { API_URL } from "../config";
@@ -71,9 +70,9 @@ export default function Home() {
   const cargarDatosUsuario = async () => {
     try {
       const token = localStorage.getItem('token');
-      
+
       console.log('Cargando datos - Token existe:', !!token);
-      
+
       if (!token) {
         console.log('No hay token para cargar datos');
         return;
@@ -92,7 +91,7 @@ export default function Home() {
       if (response.ok) {
         const result = await response.json();
         const user = result.user || result;
-        
+
         const datosUsuario = {
           nombre: user.nombre || "",
           apellido: user.apellido || "",
@@ -123,69 +122,86 @@ export default function Home() {
       setPesosSemanal(data);
     }
   };
-const cargarEjercicio = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) return;
-  const res = await fetch(`${API_URL}/api/ejercicio`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  if (res.ok) {
-    const data = await res.json();
-    // data es un array de objetos { dia, fecha }
-    // Marcamos como activo cada día que esté en la lista
-    setDiasSemana(diasSemanaBase.map(diaObj => ({
-      ...diaObj,
-      activo: data.some(e => e.dia === diaObj.dia)
-    })));
-  }
-};
-
-// Guardar día de ejercicio en el backend
-const guardarDiaEjercicio = async (dia) => {
-  const token = localStorage.getItem('token');
-  if (!token) return;
-  const now = new Date();
-  await fetch(`${API_URL}/api/ejercicio`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ dia, fecha: now.toISOString() })
-  });
-  cargarEjercicio();
-};
-
-// Cuando el usuario marca un día, lo guardamos en el backend si lo activa
-const cambiarDiaEjercicio = idx => {
-  setDiasSemana(prev => {
-    const nuevoEstado = prev.map((dia, i) =>
-      i === idx ? { ...dia, activo: !dia.activo } : dia
-    );
-    // Si lo activamos, lo guardamos en el backend
-    if (!prev[idx].activo) {
-      guardarDiaEjercicio(prev[idx].dia);
-    }
-    // Si lo desactivas, podrías implementar un endpoint para eliminarlo si lo necesitas
-    return nuevoEstado;
-  });
-};
-
-const cargarEstadisticas = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) return;
-  const res = await fetch(`${API_URL}/api/estadisticas/totales`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  if (res.ok) {
-    const data = await res.json();
-    setDiasEjercicio({
-      totalMes: data.este_mes,
-      totalAño: data.este_año
+  const cargarEjercicio = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const res = await fetch(`${API_URL}/api/ejercicio`, {
+      headers: { 'Authorization': `Bearer ${token}` }
     });
-    // Puedes usar data.esta_semana si lo necesitas
-  }
-};
+    if (res.ok) {
+      const data = await res.json();
+      // data es un array de objetos { dia, fecha }
+      // Marcamos como activo cada día que esté en la lista
+      setDiasSemana(diasSemanaBase.map(diaObj => ({
+        ...diaObj,
+        activo: data.some(e => e.dia === diaObj.dia)
+      })));
+    }
+  };
+
+  // Guardar día de ejercicio en el backend
+  const guardarDiaEjercicio = async (dia) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const now = new Date();
+    await fetch(`${API_URL}/api/ejercicio`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ dia, fecha: now.toISOString() })
+    });
+    cargarEjercicio();
+  };
+
+  // Eliminar día de ejercicio en el backend
+  const eliminarDiaEjercicio = async (dia) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    await fetch(`${API_URL}/api/ejercicio`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ dia })
+    });
+    cargarEjercicio();
+  };
+
+  // Cuando el usuario marca un día, lo guardamos en el backend si lo activa
+  const cambiarDiaEjercicio = idx => {
+    setDiasSemana(prev => {
+      const nuevoEstado = prev.map((dia, i) =>
+        i === idx ? { ...dia, activo: !dia.activo } : dia
+      );
+      if (!prev[idx].activo) {
+        // Si lo activamos, lo guardamos en el backend
+        guardarDiaEjercicio(prev[idx].dia);
+      } else {
+        // Si lo desactivamos, lo eliminamos del backend
+        eliminarDiaEjercicio(prev[idx].dia);
+      }
+      return nuevoEstado;
+    });
+  };
+
+  const cargarEstadisticas = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const res = await fetch(`${API_URL}/api/estadisticas/totales`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setDiasEjercicio({
+        totalMes: data.este_mes,
+        totalAño: data.este_año
+      });
+      // Puedes usar data.esta_semana si lo necesitas
+    }
+  };
 
   // Cargar datos al montar el componente
   // ✅ useEffect para cargar datos al iniciar el componente
@@ -203,15 +219,15 @@ const cargarEstadisticas = async () => {
 
   const guardarCambios = async () => {
     setIsLoading(true);
-    
+
     try {
       // Obtener token de forma DIRECTA
       const token = localStorage.getItem('token');
-      
+
       // Debug simple
       console.log('Token obtenido:', token ? 'SÍ EXISTE' : 'NO EXISTE');
       console.log('Primeros 20 caracteres:', token ? token.substring(0, 20) : 'N/A');
-      
+
       // Si no hay token, mostrar alert Y continuar (para debuggear)
       if (!token) {
         console.log('❌ No se encontró token');
@@ -243,12 +259,12 @@ const cargarEstadisticas = async () => {
       const headers = {
         'Content-Type': 'application/json'
       };
-      
+
       // Solo agregar Authorization si hay token
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      
+
       console.log('Headers a enviar:', headers);
 
       const response = await fetch(`${API_URL}/api/usuario/datos`, {
@@ -264,7 +280,7 @@ const cargarEstadisticas = async () => {
       if (response.ok) {
         // ✅ Éxito: actualizar estado local con datos del servidor
         const userFromServer = result.user;
-        
+
         // Mapear campos del backend al frontend
         const datosActualizados = {
           nombre: userFromServer.nombre || "",
@@ -278,7 +294,7 @@ const cargarEstadisticas = async () => {
         setUserData(datosActualizados);
         setTempUserData(datosActualizados);
         setEditMode(false);
-        
+
         alert('✅ Datos actualizados correctamente!');
       } else {
         // ❌ Error del servidor
@@ -309,28 +325,35 @@ const cargarEstadisticas = async () => {
   };
 
   const agregarPeso = async () => {
-  if (nuevoPeso && parseFloat(nuevoPeso) > 0) {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const now = new Date();
-    const nuevaEntrada = {
-      peso: parseFloat(nuevoPeso),
-      fecha: now.toISOString()
-    };
-    const res = await fetch(`${API_URL}/api/pesos`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(nuevaEntrada)
-    });
-    if (res.ok) {
-      cargarPesos(); // Recarga la lista desde el backend
-      setNuevoPeso('');
+    if (nuevoPeso && parseFloat(nuevoPeso) > 0) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Debes iniciar sesión para guardar tu peso.");
+        return;
+      }
+      const now = new Date();
+      const nuevaEntrada = {
+        peso: parseFloat(nuevoPeso),
+        fecha: now.toISOString()
+      };
+      const res = await fetch(`${API_URL}/api/pesos`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(nuevaEntrada)
+      });
+      if (res.ok) {
+        await cargarPesos(); // Recarga la lista desde el backend
+        setNuevoPeso('');
+      } else {
+        alert("No se pudo guardar el peso. Intenta de nuevo.");
+      }
+    } else {
+      alert("Introduce un peso válido.");
     }
-  }
-};
+  };
 
   const eliminarPesoEspecifico = idx => {
     setPesosSemanal(prev => prev.filter((_, i) => i !== idx));
@@ -472,15 +495,15 @@ const cargarEstadisticas = async () => {
                 </button>
               ) : (
                 <div>
-                  <button 
-                    onClick={guardarCambios} 
+                  <button
+                    onClick={guardarCambios}
                     className="home-btn home-btn-save"
                     disabled={isLoading}
                   >
                     {isLoading ? "Guardando..." : "Guardar"}
                   </button>
-                  <button 
-                    onClick={cancelarEdicion} 
+                  <button
+                    onClick={cancelarEdicion}
                     className="home-btn home-btn-cancel"
                     disabled={isLoading}
                   >
@@ -703,7 +726,7 @@ const cargarEstadisticas = async () => {
                           y1={margenTop + altoChart - ((Number(userData.metaPeso) - minY) / rangoY) * altoChart}
                           x2={margenIzq + anchoChart}
                           y2={margenTop + altoChart - ((Number(userData.metaPeso) - minY) / rangoY) * altoChart}
-                          stroke="#e11d48" 
+                          stroke="#e11d48"
                           strokeWidth="3"
                           strokeDasharray="8,4"
                         />
