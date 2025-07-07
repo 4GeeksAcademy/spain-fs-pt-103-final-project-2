@@ -39,10 +39,14 @@ const useGlobalReducer = () => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    dispatch({ type: "logout" });
-  };
+const logout = () => {
+  dispatch({ type: "set_user", payload: null });
+  dispatch({ type: "set_token", payload: null });
+  localStorage.removeItem("token");
+  sessionStorage.removeItem("token");
+  console.log("Usuario deslogueado");
+  // window.location.reload(); // Elimina esta línea
+};
 
   const register = async (email, password) => {
     try {
