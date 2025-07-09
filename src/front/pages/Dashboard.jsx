@@ -516,7 +516,7 @@ export default function Home() {
             </button>
           </form>
           {response && (
-            <div className="chatbot-response">
+            <div className="ai-response">
               <strong>Respuesta:</strong>
               <div>{response}</div>
             </div>
