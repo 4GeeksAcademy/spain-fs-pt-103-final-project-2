@@ -33,7 +33,20 @@ from api.utils import generate_sitemap
 # ---------------------------------------------------------------------------
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
-STATIC_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../dist")
+static_file_dir = os.path.join(os.path.dirname(
+    os.path.realpath(__file__)), '../dist/')
+app = Flask(__name__)
+app.url_map.strict_slashes = False
+
+# database condiguration
+db_url = os.getenv("DATABASE_URL")
+if db_url is not None:
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
+        "postgres://", "postgresql://")
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app = Flask(__name__)
 
