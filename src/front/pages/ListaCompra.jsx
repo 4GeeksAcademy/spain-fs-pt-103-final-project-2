@@ -11,7 +11,7 @@ export default function ShoppingList() {
 
   const token = localStorage.getItem("token");
   // HTTPS por defecto: Codespace o .env
-  const API_URL = import.meta.env.VITE_API_URL ?? "https://animated-potato-wr549vvxp57qc95px-3001.app.github.dev/";
+  const API_URL = import.meta.env.VITE_API_URL 
 
   /** Normaliza _id → id */
   const normalizeItem = (raw) => ({ ...raw, id: raw.id ?? raw._id });
