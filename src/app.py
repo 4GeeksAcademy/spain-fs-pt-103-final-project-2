@@ -86,7 +86,7 @@ app.register_blueprint(chat_api)  # ya lleva su propio prefijo
 def root():
     if ENV == "development":
         return generate_sitemap(app)
-    return send_from_directory(STATIC_DIR, "index.html")
+    return send_from_directory(static_file_dir, "index.html")
 
 # -------------------- AUTH DECORATOR (corregido) ----------------------------
 
